@@ -1,0 +1,52 @@
+name: gates
+on: [push, pull_request]
+jobs:
+  graph-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cross-artifact semantic gate
+        run: python3 scripts/graph_gate.py artifacts
+  gate-negative-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Gate must FAIL on a calibration with no false-positive rate
+        run: |
+          python3 - <<'PY'
+          import re, pathlib
+          p = pathlib.Path("artifacts/CALIBRATION/examples/example-weight-floor.md")
+          s = p.read_text()
+          s = re.sub(r"## Error Rates\n.*?(?=\n## Attestation)",
+                     "## Error Rates\n\nThe rule detects the problem reliably.\n",
+                     s, flags=re.S)
+          p.write_text(s)
+          PY
+          if python3 scripts/graph_gate.py artifacts; then
+            echo "gate did not fail on a broken calibration"; exit 1
+          fi
+          git checkout -- artifacts
+      - name: Gate must FAIL on a finding resting on refused verdicts
+        run: |
+          sed -i 's/^status: retracted/status: supported/' \
+            artifacts/FINDING/examples/example-activation-energy.md
+          if python3 scripts/graph_gate.py artifacts; then
+            echo "gate did not fail on an unsupported finding"; exit 1
+          fi
+          git checkout -- artifacts
+  emit-roundtrip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Emitted artifacts must pass the gate
+        run: |
+          cp -r artifacts /tmp/rt
+          python3 scripts/emit_artifacts.py tests/sample_results.csv \
+            --system zno --dataset cpt-zno-dataset-750pass \
+            --scan cpt-zno-scan-750pass --out /tmp/rt \
+            --model 'Z(w) = R_s + 1/(1/R_gb + Q (jw)^alpha)' \
+            --weighting-calib cpt-zno-calib-weight-floor \
+            --misfit-calib cpt-zno-calib-misfit-metric \
+            --residual-calib cpt-zno-calib-residual-structure \
+            --attest 'CI roundtrip'
+          python3 scripts/graph_gate.py /tmp/rt

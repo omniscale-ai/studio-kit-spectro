@@ -1,0 +1,363 @@
+# Constructor Studio Spectro Kit -- deterministic validation constraints.
+#
+# Artifact chain:
+#   DATASET -> ARTEFACT-SCAN -> FIT -> VERDICT -> FINDING
+#                                       ^
+#                          CALIBRATION -+          ANALYSIS-PLAN gates all
+#
+# The organising rule this file exists to enforce: a parameter may never be
+# reported without the evidence that licenses it, and a threshold may never
+# exist without a calibration naming the quantity it was scored on.
+
+# ── DATASET ───────────────────────────────────────────────────────────
+
+[[artifacts.DATASET.headings]]
+id = "ds-h1-title"
+level = 1
+required = true
+description = "Dataset title (H1)."
+
+[[artifacts.DATASET.headings]]
+id = "ds-instrument"
+level = 2
+required = true
+pattern = "Instrument"
+description = "Instrument, excitation amplitude/bias, measured range, points per decade, and the RANGE OVER WHICH THE INSTRUMENT IS TRUSTED. A range not stated is a range not checked."
+
+[[artifacts.DATASET.headings]]
+id = "ds-conditions"
+level = 2
+required = true
+pattern = "Condition Axes"
+description = "Every condition axis, each declared MEASUREMENT or SYNTHESIS. A synthesis axis varies the sample; a measurement axis varies the measurement of one sample. Confusing the two invalidates any trend fitted across it."
+
+[[artifacts.DATASET.headings]]
+id = "ds-geometry"
+level = 2
+required = true
+pattern = "Sample Geometry"
+description = "Per-sample geometry needed to convert measured quantities to material properties, or an explicit statement that it was not recorded and which quantities are therefore unreportable."
+
+[[artifacts.DATASET.headings]]
+id = "ds-provenance"
+level = 2
+required = true
+pattern = "Provenance"
+description = "Files, acquisition dates and sessions, operator, format quirks."
+
+# ── ARTEFACT-SCAN ─────────────────────────────────────────────────────
+
+[[artifacts.ARTEFACT-SCAN.headings]]
+id = "as-h1-title"
+level = 1
+required = true
+description = "Artefact scan title (H1)."
+
+[[artifacts.ARTEFACT-SCAN.headings]]
+id = "as-dataset"
+level = 2
+required = true
+pattern = "Dataset"
+description = "Reference to the DATASET scanned."
+
+[[artifacts.ARTEFACT-SCAN.headings]]
+id = "as-findings"
+level = 2
+required = true
+pattern = "Contaminations"
+description = "Each contamination found: where in the independent variable, how detected, how many measurements affected, and its evidence. Series-level detection is required for anything that looks like an outlier in a single measurement."
+
+[[artifacts.ARTEFACT-SCAN.headings]]
+id = "as-window"
+level = 2
+required = true
+pattern = "Working Window"
+description = "The retained range and the REJECTION STRATEGY (notch vs truncate), with the evidence for choosing it. Truncating a band also discards whatever else lives there."
+
+[[artifacts.ARTEFACT-SCAN.headings]]
+id = "as-attestation"
+level = 2
+required = true
+pattern = "Attestation"
+description = "Which script produced this scan, version, and invocation. Artefact scans are script-generated."
+
+# ── FIT ───────────────────────────────────────────────────────────────
+
+[[artifacts.FIT.headings]]
+id = "fit-h1-title"
+level = 1
+required = true
+description = "Fit record title (H1)."
+
+[[artifacts.FIT.headings]]
+id = "fit-measurement"
+level = 2
+required = true
+pattern = "Measurement"
+description = "Which measurement, from which DATASET, after which ARTEFACT-SCAN. Points used vs points available, and why any were dropped."
+
+[[artifacts.FIT.headings]]
+id = "fit-model"
+level = 2
+required = true
+pattern = "Model"
+description = "The model fitted, stated as an equation. Not a name -- a name hides how many free parameters there are."
+
+[[artifacts.FIT.headings]]
+id = "fit-weighting"
+level = 2
+required = true
+pattern = "Weighting"
+description = "The weighting/noise model and the CALIBRATION that licenses it. Weighting is a modelling assumption, not a detail."
+
+[[artifacts.FIT.headings]]
+id = "fit-parameters"
+level = 2
+required = true
+pattern = "Parameters"
+description = "Recovered parameters with uncertainties, and any parameter resting on a bound (which means it is not determined by the data)."
+
+[[artifacts.FIT.headings]]
+id = "fit-attestation"
+level = 2
+required = true
+pattern = "Attestation"
+description = "Script, version, invocation. Fits are script-generated."
+
+# ── VERDICT ───────────────────────────────────────────────────────────
+
+[[artifacts.VERDICT.headings]]
+id = "vd-h1-title"
+level = 1
+required = true
+description = "Verdict title (H1)."
+
+[[artifacts.VERDICT.headings]]
+id = "vd-fit"
+level = 2
+required = true
+pattern = "Fit"
+description = "Reference to the FIT this verdict judges."
+
+[[artifacts.VERDICT.headings]]
+id = "vd-evidence"
+level = 2
+required = true
+pattern = "Evidence"
+description = "One row per criterion: identifiability, misfit, residual structure, noise tier, instrument range. Each with its measured value, its threshold, and the CALIBRATION licensing that threshold."
+
+[[artifacts.VERDICT.headings]]
+id = "vd-call"
+level = 2
+required = true
+pattern = "Call"
+description = "The usability call and, where a parameter is refused, whether it is BIASED (wrong model) or merely IMPRECISE (noise). These demand opposite responses and must not be merged."
+
+[[artifacts.VERDICT.headings]]
+id = "vd-attestation"
+level = 2
+required = true
+pattern = "Attestation"
+description = "Script, version, invocation. Verdicts are script-generated and never hand-edited."
+
+# ── CALIBRATION ───────────────────────────────────────────────────────
+
+[[artifacts.CALIBRATION.headings]]
+id = "cal-h1-title"
+level = 1
+required = true
+description = "Calibration title (H1)."
+
+[[artifacts.CALIBRATION.headings]]
+id = "cal-question"
+level = 2
+required = true
+pattern = "Question"
+description = "The threshold, constant or method choice this calibration licenses, and where it is used."
+
+[[artifacts.CALIBRATION.headings]]
+id = "cal-scored"
+level = 2
+required = true
+pattern = "Scored Quantity"
+description = "THE quantity the choice was scored on, and which quantities it was NOT scored on. A constant scored on the wrong quantity is the most common way a pipeline goes quietly wrong."
+
+[[artifacts.CALIBRATION.headings]]
+id = "cal-truth"
+level = 2
+required = true
+pattern = "Ground Truth"
+description = "How truth was known: synthetic generator and its parameters, or an independent measurement. State the inverse-crime exposure -- data generated from the same model the fitter assumes flatters the fitter."
+
+[[artifacts.CALIBRATION.headings]]
+id = "cal-result"
+level = 2
+required = true
+pattern = "Result"
+description = "The sweep: candidate values against the scored quantity, and the chosen value."
+
+[[artifacts.CALIBRATION.headings]]
+id = "cal-errors"
+level = 2
+required = true
+pattern = "Error Rates"
+description = "BOTH rates. Detection alone is not a calibration: a rule that fires on everything detects everything. State the false-positive rate on cases known to be negative."
+
+[[artifacts.CALIBRATION.headings]]
+id = "cal-attestation"
+level = 2
+required = true
+pattern = "Attestation"
+description = "Script, version, invocation, seed. Calibrations must be reproducible."
+
+# ── FINDING ───────────────────────────────────────────────────────────
+
+[[artifacts.FINDING.headings]]
+id = "fnd-h1-title"
+level = 1
+required = true
+description = "Finding title (H1)."
+
+[[artifacts.FINDING.headings]]
+id = "fnd-claim"
+level = 2
+required = true
+pattern = "Claim"
+description = "The physical claim, stated so it could be wrong."
+
+[[artifacts.FINDING.headings]]
+id = "fnd-support"
+level = 2
+required = true
+pattern = "Supporting Verdicts"
+description = "Every VERDICT the claim rests on. A claim resting on refused verdicts is not supported by this data."
+
+[[artifacts.FINDING.headings]]
+id = "fnd-confounds"
+level = 2
+required = true
+pattern = "Confounds Considered"
+description = "What else could produce this pattern -- geometry, synthesis parameters, instrument range, selection -- and how each was excluded or why it could not be."
+
+[[artifacts.FINDING.headings]]
+id = "fnd-repro"
+level = 2
+required = true
+pattern = "Reproduction"
+description = "Whether the claim holds in an independent sample set, and its within-group scatter against the between-group effect. An effect smaller than its own replication scatter is not an effect."
+
+# ── ANALYSIS-PLAN ─────────────────────────────────────────────────────
+
+[[artifacts.ANALYSIS-PLAN.headings]]
+id = "ap-h1-title"
+level = 1
+required = true
+description = "Plan title (H1)."
+
+[[artifacts.ANALYSIS-PLAN.headings]]
+id = "ap-question"
+level = 2
+required = true
+pattern = "Question"
+description = "What is to be learned, and which quantity answers it."
+
+[[artifacts.ANALYSIS-PLAN.headings]]
+id = "ap-scope"
+level = 2
+required = true
+pattern = "Scope"
+description = "Datasets in scope and explicit out-of-scope items."
+
+[[artifacts.ANALYSIS-PLAN.headings]]
+id = "ap-interventions"
+level = 2
+required = true
+pattern = "Allowed Interventions"
+description = "User-authorised interventions. Everything else is ask-first -- notably changing any calibrated constant."
+
+[[artifacts.ANALYSIS-PLAN.headings]]
+id = "ap-deliverables"
+level = 2
+required = true
+pattern = "Deliverables"
+description = "What the work must produce."
+
+[[artifacts.ANALYSIS-PLAN.headings]]
+id = "ap-decisions"
+level = 2
+required = true
+pattern = "Decisions Log"
+description = "Question, options with trade-offs, choice."
+
+[[artifacts.ANALYSIS-PLAN.headings]]
+id = "ap-approval"
+level = 2
+required = true
+pattern = "Approval"
+description = "Who approved, when. Required for status: approved."
+
+# ── identifiers ───────────────────────────────────────────────────────
+
+[artifacts.DATASET.identifiers.dataset]
+name = "Dataset"
+description = "One measurement campaign with its instrument, condition axes and geometry."
+required = true
+template = "cpt-{system}-dataset-{slug}"
+headings = ["ds-h1-title"]
+
+[artifacts.DATASET.identifiers.dataset.references.ARTEFACT-SCAN]
+headings = ["as-dataset"]
+
+[artifacts.ARTEFACT-SCAN.identifiers.scan]
+name = "Artefact Scan"
+description = "Series-level survey of what in a dataset cannot be trusted."
+required = true
+template = "cpt-{system}-scan-{slug}"
+headings = ["as-h1-title"]
+
+[artifacts.ARTEFACT-SCAN.identifiers.scan.references.FIT]
+headings = ["fit-measurement"]
+
+[artifacts.FIT.identifiers.fit]
+name = "Fit"
+description = "One model fitted to one measurement, with its weighting and recovered parameters."
+required = true
+template = "cpt-{system}-fit-{slug}"
+headings = ["fit-h1-title"]
+
+[artifacts.FIT.identifiers.fit.references.VERDICT]
+headings = ["vd-fit"]
+
+[artifacts.VERDICT.identifiers.verdict]
+name = "Verdict"
+description = "Whether a fitted parameter may be used, and on what evidence."
+required = true
+template = "cpt-{system}-verdict-{slug}"
+headings = ["vd-h1-title"]
+
+[artifacts.VERDICT.identifiers.verdict.references.FINDING]
+headings = ["fnd-support"]
+
+[artifacts.CALIBRATION.identifiers.calib]
+name = "Calibration"
+description = "The ground-truth evidence licensing one threshold, constant or method choice."
+required = true
+template = "cpt-{system}-calib-{slug}"
+headings = ["cal-h1-title"]
+
+[artifacts.CALIBRATION.identifiers.calib.references.VERDICT]
+headings = ["vd-evidence"]
+
+[artifacts.FINDING.identifiers.finding]
+name = "Finding"
+description = "A physical claim drawn from verdicts, with its confounds and reproduction."
+required = true
+template = "cpt-{system}-finding-{slug}"
+headings = ["fnd-h1-title"]
+
+[artifacts.ANALYSIS-PLAN.identifiers.aplan]
+name = "Analysis Plan"
+description = "Approved intake decisions gating analysis work."
+required = true
+template = "cpt-{system}-aplan-{slug}"
+headings = ["ap-h1-title"]

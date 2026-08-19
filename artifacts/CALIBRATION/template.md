@@ -1,0 +1,56 @@
+---
+status: {draft | complete}
+date: {YYYY-MM-DD}
+---
+
+# {Calibration of <threshold or choice>}
+
+**ID**: `cpt-{system}-calib-{slug}`
+
+## Question
+
+{The threshold, constant or method choice this licenses, and every place it is
+used. If it is used in more than one place, each use is a separate claim on
+this evidence.}
+
+## Scored Quantity
+
+{THE quantity the choice was scored on — and, equally important, the quantities
+it was NOT scored on.
+
+A constant tuned on quantity A while being relied upon for quantity B is the
+commonest way a pipeline goes quietly wrong: it will be defensible on its own
+terms and wrong in use. If B matters, score on B.}
+
+## Ground Truth
+
+{How truth was known: synthetic generator with its parameters and seeds, or an
+independent measurement.
+
+State the inverse-crime exposure. Data generated from the same model the fitter
+assumes will flatter the fitter, and the parts of the result that flatters must
+be named.}
+
+## Result
+
+| candidate | {scored quantity} | {secondary} | note |
+|---|---|---|---|
+
+{The sweep, then the chosen value. If the scored quantity is flat across the
+range, say so — a flat sweep means this evidence does not license any value,
+and the choice must be made on other grounds that are then stated.}
+
+## Error Rates
+
+{BOTH rates, on cases where truth is known:
+
+- **detection** — the rule fires when it should
+- **false positive** — the rule fires when it should not
+
+Detection alone is not a calibration: a rule that fires on everything detects
+everything. If the deployed rule is a conjunction of several tests, score THE
+CONJUNCTION — the component statistic's rates are not the deployed rule's.}
+
+## Attestation
+
+{Script, version/commit, invocation, seeds.}

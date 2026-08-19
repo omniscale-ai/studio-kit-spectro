@@ -1,0 +1,38 @@
+---
+status: {permitted | refused}
+date: {YYYY-MM-DD}
+---
+
+# {Verdict on <parameter> from <fit>}
+
+**ID**: `cpt-{system}-verdict-{slug}`
+
+## Fit
+
+{Reference: `cpt-{system}-fit-{slug}`, and which parameter is being judged.}
+
+## Evidence
+
+| criterion | measured | threshold | licensed by |
+|---|---|---|---|
+| identifiability | {did the feature that determines this parameter appear inside the measured range?} | {…} | `cpt-{system}-calib-{slug}` |
+| misfit | {…} | {…} | `cpt-{system}-calib-{slug}` |
+| residual structure | {random / systematic, with the statistic} | {…} | `cpt-{system}-calib-{slug}` |
+| noise | {…} | {…} | `cpt-{system}-calib-{slug}` |
+| instrument range | {is the signal inside the range the DATASET declares trusted?} | {…} | `cpt-{system}-calib-{slug}` |
+
+## Call
+
+{The call, and where a parameter is refused, WHICH KIND of failure:
+
+- **imprecise** — the model fits, the data is noisy. Widen the uncertainty.
+- **biased** — the model does not fit the data's shape. No uncertainty covers
+  this; the parameter is wrong, not merely uncertain.
+
+These demand opposite responses and must never be merged into one "bad fit".}
+
+## Attestation
+
+{Script, version/commit, invocation. Verdicts are script-generated and never
+hand-edited — a verdict edited by the person who wants the parameter is not
+evidence.}

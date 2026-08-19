@@ -1,0 +1,367 @@
+# Constructor Studio Spectro Kit — Declarative Installation Manifest
+# Schema: kit-manifest.schema.json v1.0
+
+[manifest]
+version = "1.0"
+root = "{cf-studio-path}/config/kits/{slug}"
+user_modifiable = true
+
+# ── DATASET ───────────────────────────────────────────────────────────
+
+[[resources]]
+id = "dataset_template"
+description = "DATASET artifact template"
+source = "artifacts/DATASET/template.md"
+default_path = "artifacts/DATASET/template.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "dataset_rules"
+description = "DATASET validation rules"
+source = "artifacts/DATASET/rules.md"
+default_path = "artifacts/DATASET/rules.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "dataset_checklist"
+description = "DATASET review checklist"
+source = "artifacts/DATASET/checklist.md"
+default_path = "artifacts/DATASET/checklist.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "dataset_example_750pass"
+description = "DATASET example (ZnO 750-pass set: synthesis axes, missing geometry)"
+source = "artifacts/DATASET/examples/example-zno-750pass.md"
+default_path = "artifacts/DATASET/examples/example-zno-750pass.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "dataset_example_cseries"
+description = "DATASET example (ZnO C-series: full geometry, 3.96x confound)"
+source = "artifacts/DATASET/examples/example-zno-cseries.md"
+default_path = "artifacts/DATASET/examples/example-zno-cseries.md"
+type = "file"
+user_modifiable = true
+
+# ── ARTEFACT-SCAN ─────────────────────────────────────────────────────
+
+[[resources]]
+id = "scan_template"
+description = "ARTEFACT-SCAN artifact template"
+source = "artifacts/ARTEFACT-SCAN/template.md"
+default_path = "artifacts/ARTEFACT-SCAN/template.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "scan_rules"
+description = "ARTEFACT-SCAN validation rules"
+source = "artifacts/ARTEFACT-SCAN/rules.md"
+default_path = "artifacts/ARTEFACT-SCAN/rules.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "scan_checklist"
+description = "ARTEFACT-SCAN review checklist"
+source = "artifacts/ARTEFACT-SCAN/checklist.md"
+default_path = "artifacts/ARTEFACT-SCAN/checklist.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "scan_example_750pass"
+description = "ARTEFACT-SCAN example (mains detection, notch vs truncate scored)"
+source = "artifacts/ARTEFACT-SCAN/examples/example-zno-750pass.md"
+default_path = "artifacts/ARTEFACT-SCAN/examples/example-zno-750pass.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "scan_example_cseries"
+description = "ARTEFACT-SCAN example (C-series, impedance ceiling recorded)"
+source = "artifacts/ARTEFACT-SCAN/examples/example-zno-cseries.md"
+default_path = "artifacts/ARTEFACT-SCAN/examples/example-zno-cseries.md"
+type = "file"
+user_modifiable = true
+
+# ── FIT ───────────────────────────────────────────────────────────────
+
+[[resources]]
+id = "fit_template"
+description = "FIT artifact template"
+source = "artifacts/FIT/template.md"
+default_path = "artifacts/FIT/template.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "fit_rules"
+description = "FIT validation rules"
+source = "artifacts/FIT/rules.md"
+default_path = "artifacts/FIT/rules.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "fit_checklist"
+description = "FIT review checklist"
+source = "artifacts/FIT/checklist.md"
+default_path = "artifacts/FIT/checklist.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "fit_example_good"
+description = "FIT example (well-determined arc, n_eff reported)"
+source = "artifacts/FIT/examples/example-zno-200c5-dark.md"
+default_path = "artifacts/FIT/examples/example-zno-200c5-dark.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "fit_example_undetermined"
+description = "FIT example (parameter undetermined without being on a bound)"
+source = "artifacts/FIT/examples/example-zno-250c5-dark.md"
+default_path = "artifacts/FIT/examples/example-zno-250c5-dark.md"
+type = "file"
+user_modifiable = true
+
+# ── VERDICT ───────────────────────────────────────────────────────────
+
+[[resources]]
+id = "verdict_template"
+description = "VERDICT artifact template"
+source = "artifacts/VERDICT/template.md"
+default_path = "artifacts/VERDICT/template.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "verdict_rules"
+description = "VERDICT validation rules"
+source = "artifacts/VERDICT/rules.md"
+default_path = "artifacts/VERDICT/rules.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "verdict_checklist"
+description = "VERDICT review checklist"
+source = "artifacts/VERDICT/checklist.md"
+default_path = "artifacts/VERDICT/checklist.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "verdict_example_permitted"
+description = "VERDICT example (permitted, with independent corroboration)"
+source = "artifacts/VERDICT/examples/example-zno-200c5-dark.md"
+default_path = "artifacts/VERDICT/examples/example-zno-200c5-dark.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "verdict_example_refused"
+description = "VERDICT example (refused as imprecise, not biased — instrument limit)"
+source = "artifacts/VERDICT/examples/example-zno-250c5-dark.md"
+default_path = "artifacts/VERDICT/examples/example-zno-250c5-dark.md"
+type = "file"
+user_modifiable = true
+
+# ── CALIBRATION ───────────────────────────────────────────────────────
+
+[[resources]]
+id = "calibration_template"
+description = "CALIBRATION artifact template"
+source = "artifacts/CALIBRATION/template.md"
+default_path = "artifacts/CALIBRATION/template.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "calibration_rules"
+description = "CALIBRATION validation rules"
+source = "artifacts/CALIBRATION/rules.md"
+default_path = "artifacts/CALIBRATION/rules.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "calibration_checklist"
+description = "CALIBRATION review checklist"
+source = "artifacts/CALIBRATION/checklist.md"
+default_path = "artifacts/CALIBRATION/checklist.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "calibration_example_floor"
+description = "CALIBRATION example (constant scored on the wrong quantity, corrected)"
+source = "artifacts/CALIBRATION/examples/example-weight-floor.md"
+default_path = "artifacts/CALIBRATION/examples/example-weight-floor.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "calibration_example_residual"
+description = "CALIBRATION example (deployed conjunction scored, not the component)"
+source = "artifacts/CALIBRATION/examples/example-residual-structure.md"
+default_path = "artifacts/CALIBRATION/examples/example-residual-structure.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "calibration_example_misfit"
+description = "CALIBRATION example (choosing a summary statistic against blind judgement)"
+source = "artifacts/CALIBRATION/examples/example-misfit-metric.md"
+default_path = "artifacts/CALIBRATION/examples/example-misfit-metric.md"
+type = "file"
+user_modifiable = true
+
+# ── FINDING ───────────────────────────────────────────────────────────
+
+[[resources]]
+id = "finding_template"
+description = "FINDING artifact template"
+source = "artifacts/FINDING/template.md"
+default_path = "artifacts/FINDING/template.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "finding_rules"
+description = "FINDING validation rules"
+source = "artifacts/FINDING/rules.md"
+default_path = "artifacts/FINDING/rules.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "finding_checklist"
+description = "FINDING review checklist"
+source = "artifacts/FINDING/checklist.md"
+default_path = "artifacts/FINDING/checklist.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "finding_example_retracted"
+description = "FINDING example (retracted: rate law fitted across a synthesis axis)"
+source = "artifacts/FINDING/examples/example-activation-energy.md"
+default_path = "artifacts/FINDING/examples/example-activation-energy.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "finding_example_supported"
+description = "FINDING example (supported: reproduces across sample sets)"
+source = "artifacts/FINDING/examples/example-effective-capacitance.md"
+default_path = "artifacts/FINDING/examples/example-effective-capacitance.md"
+type = "file"
+user_modifiable = true
+
+# ── ANALYSIS-PLAN ─────────────────────────────────────────────────────
+
+[[resources]]
+id = "aplan_template"
+description = "ANALYSIS-PLAN artifact template"
+source = "artifacts/ANALYSIS-PLAN/template.md"
+default_path = "artifacts/ANALYSIS-PLAN/template.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "aplan_rules"
+description = "ANALYSIS-PLAN validation rules"
+source = "artifacts/ANALYSIS-PLAN/rules.md"
+default_path = "artifacts/ANALYSIS-PLAN/rules.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "aplan_checklist"
+description = "ANALYSIS-PLAN review checklist"
+source = "artifacts/ANALYSIS-PLAN/checklist.md"
+default_path = "artifacts/ANALYSIS-PLAN/checklist.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "aplan_example"
+description = "ANALYSIS-PLAN example (ZnO: refusals accepted as deliverables)"
+source = "artifacts/ANALYSIS-PLAN/examples/example-zno.md"
+default_path = "artifacts/ANALYSIS-PLAN/examples/example-zno.md"
+type = "file"
+user_modifiable = true
+
+# ── constraints ───────────────────────────────────────────────────────
+
+[[resources]]
+id = "constraints"
+description = "Deterministic validation constraints for spectro artifact kinds"
+source = "constraints.toml"
+default_path = "constraints.toml"
+type = "file"
+user_modifiable = true
+
+# ── computational gates (not user-modifiable: trust depends on them) ──
+
+[[resources]]
+id = "graph_gate"
+description = "Cross-artifact semantic gate (verdict-evidence, threshold-calibration, finding-support)"
+source = "scripts/graph_gate.py"
+default_path = "scripts/graph_gate.py"
+type = "file"
+user_modifiable = false
+
+[[resources]]
+id = "emit_artifacts"
+description = "Turn a pipeline result table into FIT and VERDICT artifacts"
+source = "scripts/emit_artifacts.py"
+default_path = "scripts/emit_artifacts.py"
+type = "file"
+user_modifiable = false
+
+# ── workflows ─────────────────────────────────────────────────────────
+# NB `public = true` is a canonical-manifest field and is NOT valid in
+# manifest.toml v1.0 (additionalProperties: false). It is set for these
+# four wf_* resources in .cf-studio-kit.toml, which is what surfaces them
+# as cf-* skills.
+
+[[resources]]
+id = "wf_plan_analysis"
+description = "Workflow: intake brainstorm producing an ANALYSIS-PLAN (gates all other workflows)"
+source = "workflows/plan-analysis.md"
+default_path = "workflows/plan-analysis.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "wf_analyse_spectra"
+description = "Workflow: screen, fit and judge a spectrum series, emitting FIT and VERDICT artifacts"
+source = "workflows/analyse-spectra.md"
+default_path = "workflows/analyse-spectra.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "wf_calibrate_threshold"
+description = "Workflow: license a threshold or constant against ground truth, producing a CALIBRATION"
+source = "workflows/calibrate-threshold.md"
+default_path = "workflows/calibrate-threshold.md"
+type = "file"
+user_modifiable = true
+
+[[resources]]
+id = "wf_audit_conclusions"
+description = "Workflow: test a physical claim against what the data licenses, before it is published"
+source = "workflows/audit-conclusions.md"
+default_path = "workflows/audit-conclusions.md"
+type = "file"
+user_modifiable = true

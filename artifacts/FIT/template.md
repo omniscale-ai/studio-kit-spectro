@@ -1,0 +1,42 @@
+---
+status: {draft | complete}
+date: {YYYY-MM-DD}
+---
+
+# {Fit of <model> to <measurement>}
+
+**ID**: `cpt-{system}-fit-{slug}`
+
+## Measurement
+
+{Which measurement, from `cpt-{system}-dataset-{slug}`, after
+`cpt-{system}-scan-{slug}`. Points used of points available, and the cause of
+each exclusion.}
+
+## Model
+
+{The model as an equation, with every free parameter named. Not a label — a
+label hides the parameter count, and the parameter count is what decides
+whether the data can determine the answer.}
+
+## Weighting
+
+{The weighting or noise model, written out, and the CALIBRATION licensing it:
+`cpt-{system}-calib-{slug}`.
+
+Weighting is a modelling assumption about where the information is, not an
+implementation detail. Report the effective sample size it produces: if a
+handful of points carry the objective, the fit is determined by those points
+whatever the nominal point count.}
+
+## Parameters
+
+| parameter | value | uncertainty | on bound? |
+|---|---|---|---|
+
+{A parameter resting on a bound is not determined by the data. Say so here
+rather than reporting the bound as a measurement.}
+
+## Attestation
+
+{Script, version/commit, invocation.}
