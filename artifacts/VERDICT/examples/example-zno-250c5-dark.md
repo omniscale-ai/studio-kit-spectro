@@ -5,8 +5,17 @@ date: 2026-08-19
 
 # Verdict — R_gb from ZnO C-series, 250 °C / 5.0 mm/s, dark
 
-**ID**: `cpt-zno-verdict-cseries-250c5-dark`
 
+<!-- toc -->
+
+- [Fit](#fit)
+- [Evidence](#evidence)
+- [Call](#call)
+- [Attestation](#attestation)
+
+<!-- /toc -->
+
+**ID**: `cpt-zno-verdict-cseries-250c5-dark`
 ## Fit
 
 `cpt-zno-fit-cseries-250c5-dark`. Parameter judged: **R_gb** (nominally

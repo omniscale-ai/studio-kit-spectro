@@ -5,8 +5,17 @@ date: 2026-08-19
 
 # Retracted — "conduction activation energy 251 meV in ZnO"
 
-**ID**: `cpt-zno-finding-activation-energy`
 
+<!-- toc -->
+
+- [Claim](#claim)
+- [Supporting Verdicts](#supporting-verdicts)
+- [Confounds Considered](#confounds-considered)
+- [Reproduction](#reproduction)
+
+<!-- /toc -->
+
+**ID**: `cpt-zno-finding-activation-energy`
 ## Claim
 
 *As originally stated:* fitting R(T) = R₀·exp(Eₐ/kT) to the dark-spectrum

@@ -71,6 +71,13 @@ what to do next.
 Each `graph_gate.py` check exists because a real analysis failed that way. The
 script's docstring names the failure next to the gate.
 
+## Start here
+
+**[`examples/end-to-end/`](examples/end-to-end/README.md)** — a complete run on
+real data: what goes in, what happens, what comes out. 27 spectra in, 17 usable
+numbers and 10 documented refusals out. `tests/run_end_to_end.sh` executes it
+and asserts that outcome.
+
 ## Worked example: ZnO thin films by direct-write ALD
 
 Two impedance datasets, 54 spectra, shipped in `artifacts/*/examples/`. Read in
@@ -126,7 +133,11 @@ See [USAGE.md](USAGE.md).
 - [x] ZnO worked example, including a retraction
 - [x] `check_claims.py` — every number in an example verified against shipped
       provenance, so the worked example cannot go stale unnoticed
-- [x] CI: all three gates plus negative tests on every push
+- [x] CI: all gates plus negative tests on every push
+- [x] **Verified against Constructor Studio itself** — `cfs kit normalize`,
+      `cfs kit install`, `cfs generate-agents` and `cfs validate` all pass on a
+      clean project (14 artifacts, 0 errors, 0 warnings)
+- [x] End-to-end example and test (`examples/end-to-end/`, `tests/run_end_to_end.sh`)
 - [ ] Second domain worked example, to test how domain-neutral the shape is
 - [ ] Uncertainty propagation from VERDICT into FINDING
 

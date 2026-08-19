@@ -5,8 +5,17 @@ date: 2026-08-19
 
 # The measured capacitance is geometric, not interfacial
 
-**ID**: `cpt-zno-finding-effective-capacitance`
 
+<!-- toc -->
+
+- [Claim](#claim)
+- [Supporting Verdicts](#supporting-verdicts)
+- [Confounds Considered](#confounds-considered)
+- [Reproduction](#reproduction)
+
+<!-- /toc -->
+
+**ID**: `cpt-zno-finding-effective-capacitance`
 ## Claim
 
 The effective capacitance of these ZnO films,

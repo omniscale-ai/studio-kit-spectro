@@ -5,8 +5,18 @@ date: 2026-08-19
 
 # Single-arc fit — ZnO 750-pass, 200 °C / 5.0 mm/s, dark
 
-**ID**: `cpt-zno-fit-750pass-200c5-dark`
 
+<!-- toc -->
+
+- [Measurement](#measurement)
+- [Model](#model)
+- [Weighting](#weighting)
+- [Parameters](#parameters)
+- [Attestation](#attestation)
+
+<!-- /toc -->
+
+**ID**: `cpt-zno-fit-750pass-200c5-dark`
 ## Measurement
 
 `200C_5mms_Dark_EIS.DTA` from `cpt-zno-dataset-750pass`, after

@@ -5,8 +5,19 @@ date: 2026-08-19
 
 # Calibration — systematic-residual rule (noisy data vs wrong model)
 
-**ID**: `cpt-zno-calib-residual-structure`
 
+<!-- toc -->
+
+- [Question](#question)
+- [Scored Quantity](#scored-quantity)
+- [Ground Truth](#ground-truth)
+- [Result](#result)
+- [Error Rates](#error-rates)
+- [Attestation](#attestation)
+
+<!-- /toc -->
+
+**ID**: `cpt-zno-calib-residual-structure`
 ## Question
 
 The rule that decides whether a poor fit means **noisy data** (parameter

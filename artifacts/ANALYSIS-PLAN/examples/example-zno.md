@@ -5,8 +5,19 @@ date: 2026-08-19
 
 # Analysis plan — ZnO impedance, what is recoverable
 
-**ID**: `cpt-zno-aplan-recoverable`
 
+<!-- toc -->
+
+- [Question](#question)
+- [Scope](#scope)
+- [Allowed Interventions](#allowed-interventions)
+- [Deliverables](#deliverables)
+- [Decisions Log](#decisions-log)
+- [Approval](#approval)
+
+<!-- /toc -->
+
+**ID**: `cpt-zno-aplan-recoverable`
 ## Question
 
 What material properties of these ZnO films can be established from the two

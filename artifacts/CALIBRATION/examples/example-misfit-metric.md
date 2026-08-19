@@ -5,8 +5,19 @@ date: 2026-08-19
 
 # Calibration — which misfit statistic separates good fits from bad
 
-**ID**: `cpt-zno-calib-misfit-metric`
 
+<!-- toc -->
+
+- [Question](#question)
+- [Scored Quantity](#scored-quantity)
+- [Ground Truth](#ground-truth)
+- [Result](#result)
+- [Error Rates](#error-rates)
+- [Attestation](#attestation)
+
+<!-- /toc -->
+
+**ID**: `cpt-zno-calib-misfit-metric`
 ## Question
 
 The definition of `misfit` used by every VERDICT's misfit criterion, and its

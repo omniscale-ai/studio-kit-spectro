@@ -5,8 +5,18 @@ date: 2026-08-19
 
 # Single-arc fit — ZnO C-series, 250 °C / 5.0 mm/s, dark
 
-**ID**: `cpt-zno-fit-cseries-250c5-dark`
 
+<!-- toc -->
+
+- [Measurement](#measurement)
+- [Model](#model)
+- [Weighting](#weighting)
+- [Parameters](#parameters)
+- [Attestation](#attestation)
+
+<!-- /toc -->
+
+**ID**: `cpt-zno-fit-cseries-250c5-dark`
 ## Measurement
 
 `C-250-5-EIS-DARK.DTA` from `cpt-zno-dataset-cseries`, after

@@ -5,8 +5,17 @@ date: 2026-08-19
 
 # Artefact scan — ZnO 750-pass impedance set
 
-**ID**: `cpt-zno-scan-750pass`
 
+<!-- toc -->
+
+- [Dataset](#dataset)
+- [Contaminations](#contaminations)
+- [Working Window](#working-window)
+- [Attestation](#attestation)
+
+<!-- /toc -->
+
+**ID**: `cpt-zno-scan-750pass`
 ## Dataset
 
 `cpt-zno-dataset-750pass`, 27 spectra × 51 points.

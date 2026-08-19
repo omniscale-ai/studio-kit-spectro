@@ -5,8 +5,17 @@ date: 2026-08-19
 
 # Artefact scan — ZnO C-series impedance set
 
-**ID**: `cpt-zno-scan-cseries`
 
+<!-- toc -->
+
+- [Dataset](#dataset)
+- [Contaminations](#contaminations)
+- [Working Window](#working-window)
+- [Attestation](#attestation)
+
+<!-- /toc -->
+
+**ID**: `cpt-zno-scan-cseries`
 ## Dataset
 
 `cpt-zno-dataset-cseries`, 27 spectra × 51 points.

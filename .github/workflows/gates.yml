@@ -51,19 +51,11 @@ jobs:
           fi
           git checkout -- artifacts
 
-  emit-roundtrip:
+  end-to-end:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Emitted artifacts must pass the gate
-        run: |
-          cp -r artifacts /tmp/rt
-          python3 scripts/emit_artifacts.py tests/sample_results.csv \
-            --system zno --dataset cpt-zno-dataset-750pass \
-            --scan cpt-zno-scan-750pass --out /tmp/rt \
-            --model 'Z(w) = R_s + 1/(1/R_gb + Q (jw)^alpha)' \
-            --weighting-calib cpt-zno-calib-weight-floor \
-            --misfit-calib cpt-zno-calib-misfit-metric \
-            --residual-calib cpt-zno-calib-residual-structure \
-            --attest 'CI roundtrip'
-          python3 scripts/graph_gate.py /tmp/rt
+      - name: Install numpy
+        run: pip install --quiet numpy
+      - name: Full chain, asserting the documented outcome
+        run: tests/run_end_to_end.sh

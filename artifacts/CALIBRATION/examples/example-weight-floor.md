@@ -5,8 +5,19 @@ date: 2026-08-19
 
 # Calibration — absolute weight floor `abs_frac`
 
-**ID**: `cpt-zno-calib-weight-floor`
 
+<!-- toc -->
+
+- [Question](#question)
+- [Scored Quantity](#scored-quantity)
+- [Ground Truth](#ground-truth)
+- [Result](#result)
+- [Error Rates](#error-rates)
+- [Attestation](#attestation)
+
+<!-- /toc -->
+
+**ID**: `cpt-zno-calib-weight-floor`
 ## Question
 
 The `abs_frac` term in `σ_i = sqrt((rel·|Z_i|)² + (abs_frac·p90|Z|)²)`, used by

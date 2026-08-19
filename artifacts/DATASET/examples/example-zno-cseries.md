@@ -5,8 +5,17 @@ date: 2026-08-19
 
 # ZnO thin films by direct-write ALD — C-series (set C), impedance spectroscopy
 
-**ID**: `cpt-zno-dataset-cseries`
 
+<!-- toc -->
+
+- [Instrument](#instrument)
+- [Condition Axes](#condition-axes)
+- [Sample Geometry](#sample-geometry)
+- [Provenance](#provenance)
+
+<!-- /toc -->
+
+**ID**: `cpt-zno-dataset-cseries`
 ## Instrument
 
 Gamry IFC1010, 20 mV rms, 0 V bias, 1.00 MHz → 9.97 Hz, 51 points. Gamry

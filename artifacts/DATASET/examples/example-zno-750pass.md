@@ -5,8 +5,17 @@ date: 2026-08-19
 
 # ZnO thin films by direct-write ALD — 750-pass set, impedance spectroscopy
 
-**ID**: `cpt-zno-dataset-750pass`
 
+<!-- toc -->
+
+- [Instrument](#instrument)
+- [Condition Axes](#condition-axes)
+- [Sample Geometry](#sample-geometry)
+- [Provenance](#provenance)
+
+<!-- /toc -->
+
+**ID**: `cpt-zno-dataset-750pass`
 ## Instrument
 
 Gamry IFC1010 potentiostat. Excitation 20 mV rms, DC bias 0 V. Swept
