@@ -55,7 +55,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install numpy
-        run: pip install --quiet numpy
       - name: Full chain, asserting the documented outcome
         run: tests/run_end_to_end.sh

@@ -167,4 +167,4 @@ tests/run_end_to_end.sh
 
 Runs the emit step into a scratch directory, gates the result, verifies the
 quoted numbers against provenance, and asserts the permitted/refused split.
-Requires Python 3.9+ and numpy; `cfs` is optional and exercised if present.
+Requires Python 3.9+ and nothing else; `cfs` is optional and exercised if present.

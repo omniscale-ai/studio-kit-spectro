@@ -114,8 +114,7 @@ valid only for paths inside the project root.
 
 ## Standalone
 
-Everything here runs without Studio — Python 3.9+, stdlib only (`numpy` for the
-claims check):
+Everything here runs without Studio — Python 3.9+, **standard library only**:
 
 ```bash
 python3 scripts/graph_gate.py artifacts     # 7 cross-artifact gates

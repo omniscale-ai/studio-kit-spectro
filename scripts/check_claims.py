@@ -15,8 +15,9 @@ from the artifact text.
 
 Provenance lives in `tests/provenance/`; the kit ships it rather than referring
 to it, on its own principle that an artifact quoting a number ships with the
-evidence for that number. No dependency on the analysis package that produced
-the tables -- this must run for someone who has only the kit.
+evidence for that number. Standard library only -- no dependency on the analysis
+package that produced the tables, and none on numpy: this must run for someone
+who has only the kit and a bare Python.
 
   python3 scripts/check_claims.py [--verbose]
 Exit: 0 all claims current, 1 drift found, 2 setup error.
@@ -25,8 +26,10 @@ Exit: 0 all claims current, 1 drift found, 2 setup error.
 from __future__ import annotations
 
 import csv
+import math
 import os
 import re
+import statistics
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -34,7 +37,6 @@ ROOT = os.path.dirname(HERE)
 KIT = os.path.join(ROOT, "artifacts")
 DATA = os.path.join(ROOT, "tests", "provenance")
 
-import numpy as np
 
 TOL = 0.02          # 2% relative for measured quantities; counts must match
 
@@ -61,14 +63,16 @@ def trusted(rows):
 def c_eff(r):
     """C = (R^(1-a) Q)^(1/a) in pF, inlined to keep this dependency-free."""
     R, Q, a = fnum(r, "R_gb"), fnum(r, "Q"), fnum(r, "alpha")
-    with np.errstate(all="ignore"):
+    try:
         return float((R ** (1 - a) * Q) ** (1.0 / a)) * 1e12
+    except (ValueError, ZeroDivisionError, OverflowError):
+        return float("nan")
 
 
 def median_dark(rows, T):
     v = [fnum(r, "R_gb") / 1e6 for r in trusted(rows)
          if abs(fnum(r, "cond_temp_C") - T) < 0.5 and r["cond_illum"] == "dark"]
-    return float(np.median(v)) if v else float("nan")
+    return float(statistics.median(v)) if v else float("nan")
 
 
 # ---------------------------------------------------------------------------
@@ -119,7 +123,7 @@ def claims():
             ("C-series", ccs, r"(\d+)–\d+ pF\s*\n?\s*in the C-series",
              r"\d+–(\d+) pF\s*\n?\s*in the C-series")):
         vals = [c_eff(r) for r in trusted(rows) if "dark" in r["label"]]
-        vals = [x for x in vals if np.isfinite(x)]
+        vals = [x for x in vals if math.isfinite(x)]
         add(p, f"{name} dark C_eff low / pF", lo_pat, min(vals))
         add(p, f"{name} dark C_eff high / pF", hi_pat, max(vals))
     add(p, "permitted verdicts, 750-pass", r"(\d+) permitted verdicts in the",
@@ -176,7 +180,7 @@ def main() -> int:
         quoted = float(WORDS.get(raw.lower(), raw)) if not raw.replace(
             ".", "", 1).isdigit() else float(raw)
         actual = c["actual"]
-        if not np.isfinite(actual):
+        if not math.isfinite(actual):
             bad.append((c, quoted, "no longer computable from provenance"))
             continue
         ok = (abs(actual - quoted) <= 1 if c["integer"]
@@ -193,7 +197,7 @@ def main() -> int:
         print()
         for c, quoted, why in bad:
             a = c["actual"]
-            av = f"{a:.4g}" if isinstance(a, float) and np.isfinite(a) else a
+            av = f"{a:.4g}" if isinstance(a, float) and math.isfinite(a) else a
             q = "—" if quoted is None else quoted
             print(f"  [{why}] {c['path']}\n        {c['desc']}: artifact says "
                   f"{q}, provenance gives {av}")
