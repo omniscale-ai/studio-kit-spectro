@@ -321,6 +321,14 @@ type = "file"
 user_modifiable = false
 
 [[resources]]
+id = "check_claims"
+description = "Verify every number quoted in the example artifacts against its shipped provenance"
+source = "scripts/check_claims.py"
+default_path = "scripts/check_claims.py"
+type = "file"
+user_modifiable = false
+
+[[resources]]
 id = "emit_artifacts"
 description = "Turn a pipeline result table into FIT and VERDICT artifacts"
 source = "scripts/emit_artifacts.py"

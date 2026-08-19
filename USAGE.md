@@ -87,6 +87,27 @@ python3 scripts/graph_gate.py artifacts
 If your verdicts cite calibrations you have not written yet, G2 will say so —
 which is the point. Write them with `workflows/calibrate-threshold.md`.
 
+## 3b. Check the worked example against its provenance
+
+```bash
+python3 scripts/check_claims.py --verbose
+```
+
+Every number quoted in `artifacts/*/examples/` is read **out of the artifact**
+and re-derived from the tables in `tests/provenance/`. The kit ships that data
+rather than pointing at it, on its own principle: an artifact quoting a number
+ships with the evidence for it.
+
+This exists because the examples went stale once — tightening the verdict
+criteria upstream silently invalidated numbers in a shipped artifact. Try it:
+change `6.6%` to `9.9%` in the misfit row of
+`artifacts/VERDICT/examples/example-zno-200c5-dark.md` and re-run.
+
+A first version of this check compared numbers kept *in the script* against the
+data, never reading the artifact — so it passed while the artifact said
+something else. If you extend it, make sure your new claim actually fails when
+you edit the artifact.
+
 ## 4. The workflows
 
 With Studio installed these surface as `cf-*` skills. Standalone, they are

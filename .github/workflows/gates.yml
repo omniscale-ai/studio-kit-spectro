@@ -34,6 +34,23 @@ jobs:
             echo "gate did not fail on an unsupported finding"; exit 1
           fi
           git checkout -- artifacts
+  claims-current:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Numbers quoted in examples must match their provenance
+        run: python3 scripts/check_claims.py
+      - name: The check must FAIL on a drifted number
+        run: |
+          sed -i 's/| misfit | 6\.6% over/| misfit | 9.9% over/' \
+            artifacts/VERDICT/examples/example-zno-200c5-dark.md
+          grep -q '9.9% over' artifacts/VERDICT/examples/example-zno-200c5-dark.md \
+            || { echo "negative test edited nothing — it proves nothing"; exit 1; }
+          if python3 scripts/check_claims.py; then
+            echo "claims check did not notice a drifted number"; exit 1
+          fi
+          git checkout -- artifacts
+
   emit-roundtrip:
     runs-on: ubuntu-latest
     steps:

@@ -95,13 +95,27 @@ which is why axis kind is a required, gated field in DATASET.
 ## Install
 
 ```bash
-cfs kit install --path ./studio-kit-spectro --install-mode copy
+# from a checkout
+cfs kit install --path . --install-mode copy
+
+# once published
+cfs kit install <org>/studio-kit-spectro
 ```
+
+`--install-mode register` keeps a local kit in place instead of copying it —
+valid only for paths inside the project root.
 
 ## Standalone
 
-The gates run without Studio — Python 3.9+, stdlib only. See
-[USAGE.md](USAGE.md).
+Everything here runs without Studio — Python 3.9+, stdlib only (`numpy` for the
+claims check):
+
+```bash
+python3 scripts/graph_gate.py artifacts     # 7 cross-artifact gates
+python3 scripts/check_claims.py             # example numbers vs their provenance
+```
+
+See [USAGE.md](USAGE.md).
 
 ## Status
 
@@ -110,7 +124,9 @@ The gates run without Studio — Python 3.9+, stdlib only. See
 - [x] `emit_artifacts.py` — FIT/VERDICT generation from any pipeline's CSV
 - [x] Workflows: plan-analysis, analyse-spectra, calibrate-threshold, audit-conclusions
 - [x] ZnO worked example, including a retraction
-- [x] CI: gate on every push
+- [x] `check_claims.py` — every number in an example verified against shipped
+      provenance, so the worked example cannot go stale unnoticed
+- [x] CI: all three gates plus negative tests on every push
 - [ ] Second domain worked example, to test how domain-neutral the shape is
 - [ ] Uncertainty propagation from VERDICT into FINDING
 
