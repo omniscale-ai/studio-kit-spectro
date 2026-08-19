@@ -19,7 +19,14 @@ evidence for that number. Standard library only -- no dependency on the analysis
 package that produced the tables, and none on numpy: this must run for someone
 who has only the kit and a bare Python.
 
-  python3 scripts/check_claims.py [--verbose]
+  python3 scripts/check_claims.py [--verbose] [--artifacts DIR]
+
+`--artifacts` points the check at a copy instead of the repository's own tree.
+Tests use it so that a negative test -- which must corrupt an artifact to prove
+the check bites -- never edits the working tree. An earlier version of the
+end-to-end test edited the real file and restored it with `git checkout`, which
+silently reverted an uncommitted change and shipped the reverted file.
+
 Exit: 0 all claims current, 1 drift found, 2 setup error.
 """
 
@@ -156,6 +163,9 @@ WORDS = {"none": 0, "one": 1, "two": 2, "three": 3}
 
 
 def main() -> int:
+    global KIT
+    if "--artifacts" in sys.argv:
+        KIT = sys.argv[sys.argv.index("--artifacts") + 1]
     for d in (KIT, DATA):
         if not os.path.isdir(d):
             print(f"not found: {d}")

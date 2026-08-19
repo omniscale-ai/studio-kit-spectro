@@ -5,6 +5,16 @@ date: 2026-08-19
 
 # Verdict — R_gb from ZnO 750-pass, 200 °C / 5.0 mm/s, dark
 
+
+<!-- toc -->
+
+- [Fit](#fit)
+- [Evidence](#evidence)
+- [Call](#call)
+- [Attestation](#attestation)
+
+<!-- /toc -->
+
 **ID**: `cpt-zno-verdict-750pass-200c5-dark`
 
 ## Fit

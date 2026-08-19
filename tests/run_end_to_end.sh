@@ -17,6 +17,11 @@ trap 'rm -rf "$OUT"' EXIT
 
 PY=${PYTHON:-python3}
 fail=0
+
+# checksum the artifacts tree so step 6b can tell "this test changed a file"
+# apart from "the file was already modified before the test ran"
+tree_sum() { find artifacts -type f -name '*.md' -exec sha256sum {} + | sort | sha256sum; }
+BEFORE=$(tree_sum)
 step() { printf '\n=== %s ===\n' "$1"; }
 ok()   { printf '  ok   %s\n' "$1"; }
 bad()  { printf '  FAIL %s\n' "$1"; fail=1; }
@@ -98,18 +103,26 @@ step "6. quoted numbers match provenance"
 $PY scripts/check_claims.py >/dev/null 2>&1 \
   && ok "check_claims PASS" || bad "check_claims failed"
 
+# The negative test corrupts a number to prove the check bites -- against the
+# SCRATCH COPY, never the working tree. An earlier version edited the real file
+# and restored it with `git checkout`, which reverted an uncommitted change and
+# shipped the reverted file. A test must not be able to destroy work.
 sed -i 's/| misfit | 6\.6% over/| misfit | 9.9% over/' \
-  artifacts/VERDICT/examples/example-zno-200c5-dark.md
-if grep -q '9.9% over' artifacts/VERDICT/examples/example-zno-200c5-dark.md; then
-  $PY scripts/check_claims.py >/dev/null 2>&1 \
+  "$OUT/artifacts/VERDICT/examples/example-zno-200c5-dark.md"
+if grep -q '9.9% over' "$OUT/artifacts/VERDICT/examples/example-zno-200c5-dark.md"; then
+  $PY scripts/check_claims.py --artifacts "$OUT/artifacts" >/dev/null 2>&1 \
     && bad "check_claims did NOT notice a drifted number" \
     || ok "check_claims fails on a drifted number"
 else
   bad "negative test edited nothing — it would prove nothing"
 fi
-git checkout -- artifacts/VERDICT/examples/example-zno-200c5-dark.md 2>/dev/null \
-  || sed -i 's/| misfit | 9\.9% over/| misfit | 6.6% over/' \
-     artifacts/VERDICT/examples/example-zno-200c5-dark.md
+
+step "6b. the test left the working tree untouched"
+if [ "$(tree_sum)" = "$BEFORE" ]; then
+  ok "no artifact modified by this test"
+else
+  bad "this test modified the artifacts tree"
+fi
 
 step "7. Constructor Studio (optional)"
 if command -v cfs >/dev/null 2>&1; then
