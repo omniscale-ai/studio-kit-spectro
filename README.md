@@ -123,29 +123,18 @@ python3 scripts/check_claims.py             # example numbers vs their provenanc
 
 See [USAGE.md](USAGE.md).
 
-## Status
-
-- [x] Artifact kinds, templates, rules, checklists
-- [x] `graph_gate.py` — seven cross-artifact gates, with negative tests
-- [x] `emit_artifacts.py` — FIT/VERDICT generation from any pipeline's CSV
-- [x] Workflows: plan-analysis, analyse-spectra, calibrate-threshold, audit-conclusions
-- [x] ZnO worked example, including a retraction
-- [x] `check_claims.py` — every number in an example verified against shipped
-      provenance, so the worked example cannot go stale unnoticed
-- [x] CI: all gates plus negative tests on every push
-- [x] **Verified against Constructor Studio itself** — `cfs kit normalize`,
-      `cfs kit install`, `cfs generate-agents` and `cfs validate` all pass on a
-      clean project (14 artifacts, 0 errors, 0 warnings)
-- [x] End-to-end example and test (`examples/end-to-end/`, `tests/run_end_to_end.sh`)
-- [ ] Second domain worked example, to test how domain-neutral the shape is
-- [ ] Uncertainty propagation from VERDICT into FINDING
-
 ## Scope
 
 Deliberately general: any spectroscopy where a model is fitted to measured data
 and parameters are reported. The ZnO impedance case is the worked example, not
-the boundary. Whether the general shape holds up outside impedance is the open
-question — see Status.
+the boundary.
+
+The CALIBRATION and VERDICT layers are domain-neutral by construction — "score
+on the quantity you care about", "report both error rates" and "biased is not
+imprecise" have nothing to do with impedance. DATASET and ARTEFACT-SCAN still
+carry impedance-flavoured language in places, and adapting them to another
+technique is the obvious next test of how general the shape really is; see
+[USAGE.md](USAGE.md#5-adapting-to-your-domain).
 
 ## License
 
