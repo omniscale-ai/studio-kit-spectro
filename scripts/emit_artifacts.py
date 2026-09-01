@@ -57,6 +57,36 @@ PERMISSIVE = re.compile(r"trustworthy|usable|permitted", re.I)
 REFUSING = re.compile(r"not usable|refused|lower bound", re.I)
 
 
+LEDGER = "emitted.json"
+
+
+def write_ledger(out: Path, a, rows, emitted: list) -> None:
+    """Record what this emit produced, keyed by DATASET, into `emitted.json`.
+
+    This is the input side of gate G8. The tree alone cannot answer "did every
+    measurement arrive?" -- 27 artifacts are exactly as well-formed as 54, and
+    on the run that motivated this, the gates passed on half the data. So the
+    emitting step states its own count and ids, and the gate compares.
+
+    Entries are merged per dataset, never overwritten wholesale: a tree is
+    normally built by one emit per dataset.
+    """
+    import json
+
+    path = out / LEDGER
+    doc = {}
+    if path.exists():
+        try:
+            doc = json.loads(path.read_text(encoding="utf-8"))
+        except ValueError:
+            doc = {}
+    doc[a.dataset] = dict(
+        source=str(a.csv), system=a.system, scan=a.scan, date=a.date,
+        n_measurements=len(rows), attest=a.attest, ids=sorted(emitted))
+    path.write_text(json.dumps(doc, indent=1, sort_keys=True) + "\n",
+                    encoding="utf-8")
+
+
 def slugify(s: str) -> str:
     s = re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
     return re.sub(r"-+", "-", s)
@@ -256,14 +286,48 @@ def main() -> int:
     (out / "FIT").mkdir(parents=True, exist_ok=True)
     (out / "VERDICT").mkdir(parents=True, exist_ok=True)
 
-    n_perm = 0
+    # A slug collides when two measurements share a label. That happens across
+    # DATASETS whose labels are conditions rather than sample ids -- the ZnO
+    # cohorts both label spectra "150C-10.0mm/s-dark" -- and the second emit
+    # then overwrites the first without a word, leaving an artifact tree that
+    # looks complete and holds half the run. Refuse instead: silent loss is the
+    # failure this kit exists to prevent, and it must not be committed by the
+    # kit's own script.
+    seen: dict = {}
     for r in rows:
         slug = slugify(r[cmap["label"]])
-        (out / "FIT" / f"{slug}.md").write_text(fit_doc(r, a, cmap, params),
-                                                encoding="utf-8")
-        vd = verdict_doc(r, a, cmap)
-        (out / "VERDICT" / f"{slug}.md").write_text(vd, encoding="utf-8")
-        n_perm += vd.startswith("---\nstatus: permitted")
+        if slug in seen:
+            print(f"error: two measurements slugify to {slug!r} "
+                  f"({seen[slug]!r} and {r[cmap['label']]!r}). Artifact IDs "
+                  f"must be unique within a tree.\n"
+                  f"Give the label a per-dataset prefix, or emit each dataset "
+                  f"under its own --out.", file=sys.stderr)
+            return 2
+        seen[slug] = r[cmap["label"]]
+
+    n_perm = 0
+    emitted = []
+    for r in rows:
+        slug = slugify(r[cmap["label"]])
+        for kind, doc in (("FIT", fit_doc(r, a, cmap, params)),
+                          ("VERDICT", verdict_doc(r, a, cmap))):
+            p = out / kind / f"{slug}.md"
+            # Also refuse to clobber a file left by an EARLIER emit into the
+            # same tree, which is how the cohorts collided in practice.
+            if p.exists() and p.read_text(encoding="utf-8") != doc:
+                print(f"error: {p} already exists with different content. "
+                      f"Another dataset in this tree uses the id "
+                      f"cpt-{a.system}-{kind.lower()}-{slug}.", file=sys.stderr)
+                return 2
+            p.write_text(doc, encoding="utf-8")
+            emitted.append(f"cpt-{a.system}-{kind.lower()}-{slug}")
+        n_perm += verdict_doc(r, a, cmap).startswith("---\nstatus: permitted")
+
+    # Declare what this run emitted, so a later gate can check the tree against
+    # the intent rather than only for internal consistency. Without this the
+    # tree is only ever checked for being well-formed, and half a run is
+    # perfectly well-formed.
+    write_ledger(out, a, rows, emitted)
 
     print(f"emit_artifacts: {len(rows)} measurements")
     print(f"  FIT      -> {out/'FIT'}")

@@ -55,6 +55,7 @@ Other things worth breaking, to see what the gates are for:
 | set the retracted finding to `status: supported` | G4 | it rests on refusing verdicts |
 | delete a row's `SYNTHESIS` marker in a DATASET | G5 | the axis kind is undeclared |
 | remove the Attestation from a VERDICT | G7 | records of automated steps must name the script |
+| delete one dataset's FIT and VERDICT files | G8 | the tree lacks artifacts `emitted.json` says were written |
 | point a VERDICT's Evidence at a calibration that does not exist | G2 | unresolved threshold licence |
 
 ## 3. Generate FIT and VERDICT artifacts from your own pipeline
@@ -77,6 +78,13 @@ python3 scripts/emit_artifacts.py results.csv \
     --params R_s,R_p,Q,alpha \
     --map verdict=usability reasons=why
 ```
+
+`emit_artifacts.py` refuses to overwrite: if two measurements slugify to the
+same artifact id — which happens when labels are conditions rather than sample
+ids, and two datasets share a grid — it exits 2 rather than silently replacing
+the first dataset's records. Give the labels a per-dataset prefix, or emit each
+dataset under its own `--out`. It also writes `emitted.json`, a ledger of what
+it produced; gate G8 checks the tree against it.
 
 Then gate:
 

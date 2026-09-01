@@ -99,6 +99,33 @@ $PY scripts/graph_gate.py "$OUT/artifacts" >/dev/null 2>&1 \
   && bad "gate did NOT fail on a calibration with no false-positive rate" \
   || ok "gate fails on a calibration with no false-positive rate"
 
+# G8. Two datasets whose measurements are labelled by CONDITION collide on
+# artifact id. The emit must refuse rather than overwrite, and a tree that lost
+# artifacts must fail the gate -- half a run is as well-formed as a whole one,
+# so every other gate passes on it.
+G8DIR="$OUT/g8"
+mkdir -p "$G8DIR"
+EMIT_ARGS="--system t --model Z \
+  --weighting-calib cpt-t-calib-w --misfit-calib cpt-t-calib-m \
+  --residual-calib cpt-t-calib-r --attest test"
+$PY scripts/emit_artifacts.py tests/provenance/results_cseries.csv \
+  --dataset cpt-t-dataset-a --scan cpt-t-scan-a --out "$G8DIR" \
+  $EMIT_ARGS >/dev/null 2>&1 || true
+N1=$(ls "$G8DIR/FIT" 2>/dev/null | wc -l)
+$PY scripts/emit_artifacts.py tests/provenance/results_750pass.csv \
+  --dataset cpt-t-dataset-b --scan cpt-t-scan-b --out "$G8DIR" \
+  $EMIT_ARGS >/dev/null 2>&1 \
+  && bad "emit did NOT refuse a colliding artifact id" \
+  || ok "emit refuses a colliding artifact id instead of overwriting"
+N2=$(ls "$G8DIR/FIT" 2>/dev/null | wc -l)
+[ "$N1" = "$N2" ] && ok "the refused emit left the first dataset intact" \
+                  || bad "the refused emit still modified the tree"
+
+rm -f "$G8DIR"/FIT/*.md
+$PY scripts/graph_gate.py "$G8DIR" >/dev/null 2>&1 \
+  && bad "G8 did NOT fail on a tree missing emitted artifacts" \
+  || ok "G8 fails on a tree missing artifacts the ledger records"
+
 step "6. quoted numbers match provenance"
 $PY scripts/check_claims.py >/dev/null 2>&1 \
   && ok "check_claims PASS" || bad "check_claims failed"

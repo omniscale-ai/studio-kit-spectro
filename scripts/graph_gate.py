@@ -33,6 +33,14 @@ way; the docstring for each names the failure it prevents.
       carry an Attestation naming the script. Failure prevented: hand-written
       records of automated steps.
 
+  G8  Every FIT has exactly one VERDICT and back, and the tree contains every
+      artifact `emitted.json` says was written. Failure prevented: two datasets
+      whose measurements are labelled by CONDITION collided on artifact id, so
+      the second emit overwrote the first and the tree held 27 spectra where 54
+      were expected -- and passed every other gate, because half a run is
+      exactly as well-formed as a whole one. G1-G7 ask whether what is present
+      is sound; only G8 asks whether it is all there.
+
 Usage:  python3 graph_gate.py <artifacts-root> [--json]
 Exit:   0 all gates pass, 1 violations found, 2 usage/parse error.
 """
@@ -103,8 +111,55 @@ def own_id(doc) -> str | None:
 
 
 # --------------------------------------------------------------------------
-def gate(docs: dict) -> list:
-    """Returns a list of violation dicts."""
+LEDGER = "emitted.json"
+
+
+def gate_completeness(root: Path, index: dict) -> list:
+    """G8 -- is the tree ALL there, not merely sound?
+
+    Two independent checks, because they fail apart. Pairing catches a FIT whose
+    VERDICT was lost; the ledger catches a whole dataset that was overwritten,
+    which pairing cannot see because the survivors are perfectly paired.
+    """
+    v = []
+
+    def bad(path, msg):
+        v.append(dict(gate="G8", path=str(path), message=msg))
+
+    fits = {i for i in index if "-fit-" in i}
+    verdicts = {i for i in index if "-verdict-" in i}
+    # a VERDICT names its FIT; the id differs only in the kind slug
+    for f in sorted(fits):
+        if f.replace("-fit-", "-verdict-") not in verdicts:
+            bad(index[f]["path"], f"{f} has no VERDICT; a parameter without a "
+                                  f"verdict is a number nobody can defend")
+    for w in sorted(verdicts):
+        if w.replace("-verdict-", "-fit-") not in fits:
+            bad(index[w]["path"], f"{w} refers to no FIT in this tree")
+
+    led = root / LEDGER
+    if not led.is_file():
+        return v
+    try:
+        doc = json.loads(led.read_text(encoding="utf-8"))
+    except ValueError as e:
+        bad(led, f"{LEDGER} is not readable JSON: {e}")
+        return v
+
+    for dataset, entry in sorted(doc.items()):
+        want = set(entry.get("ids") or [])
+        missing = sorted(want - set(index))
+        if missing:
+            n = entry.get("n_measurements", "?")
+            bad(led, f"{dataset} emitted {n} measurements "
+                     f"({len(want)} artifacts) but {len(missing)} are absent "
+                     f"from the tree, e.g. {missing[0]}. An artifact tree that "
+                     f"is internally consistent can still be half a run.")
+    return v
+
+
+def gate(docs: dict) -> tuple:
+    """Returns (violations, id index)."""
     v = []
 
     def bad(doc, gate_id, msg):
@@ -215,7 +270,7 @@ def gate(docs: dict) -> list:
             if not ap.strip() or PLACEHOLDER.search(ap):
                 bad(doc, "G6", "status: approved with an empty Approval "
                                "section")
-    return v
+    return v, index
 
 
 def main() -> int:
@@ -230,7 +285,8 @@ def main() -> int:
         return 2
 
     docs = collect(root)
-    violations = gate(docs)
+    violations, index = gate(docs)
+    violations += gate_completeness(root, index)
 
     if as_json:
         print(json.dumps(dict(scanned=len(docs), violations=violations),

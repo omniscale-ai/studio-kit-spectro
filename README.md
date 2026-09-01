@@ -63,7 +63,7 @@ what to do next.
    sections, ID grammar `cpt-{system}-{dataset|scan|fit|verdict|calib|finding|aplan}-{slug}`.
 2. `scripts/` — computational gates. `emit_artifacts.py` *generates* FIT and
    VERDICT records from a pipeline's result table; `graph_gate.py` enforces
-   seven cross-artifact rules that static validation cannot express.
+   eight cross-artifact rules that static validation cannot express.
 3. `workflows/` — agent routes with hard rules (a parameter may never be
    reported without its verdict; a rate law may never be fitted across a
    synthesis axis).
@@ -117,7 +117,7 @@ valid only for paths inside the project root.
 Everything here runs without Studio — Python 3.9+, **standard library only**:
 
 ```bash
-python3 scripts/graph_gate.py artifacts     # 7 cross-artifact gates
+python3 scripts/graph_gate.py artifacts     # 8 cross-artifact gates
 python3 scripts/check_claims.py             # example numbers vs their provenance
 ```
 
