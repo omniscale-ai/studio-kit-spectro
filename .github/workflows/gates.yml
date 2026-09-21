@@ -57,3 +57,24 @@ jobs:
       - uses: actions/checkout@v4
       - name: Full chain, asserting the documented outcome
         run: tests/run_end_to_end.sh
+
+  verdict-routing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # A verdict must mean the same thing to the emitter and to the gate.
+      # Regression home for the G4 bypass: the two scripts composed the same
+      # regexes in opposite orders, so "not usable for R_gb" read as permitting
+      # and a finding built on refusals passed.
+      - name: Verdict routing is consistent from table to gate
+        run: python3 tests/test_routing.py
+
+  noise-routing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Synthetic data with known truth: noisy -> imprecise, wrong model ->
+      # biased, unidentifiable -> refused even when the fit is excellent.
+      # The real dataset cannot test this; it carries no labels.
+      - name: Noise, bias and identifiability are told apart
+        run: python3 tests/test_noise.py

@@ -78,6 +78,42 @@ real data: what goes in, what happens, what comes out. 27 spectra in, 17 usable
 numbers and 10 documented refusals out. `tests/run_end_to_end.sh` executes it
 and asserts that outcome.
 
+## The kit does not ship a fitter
+
+It is not missing one. The chain starts at a **result table**: one row per
+measurement, from whatever pipeline produced the fits. `--map` exists so that
+pipeline can be anyone's. Producing the table is the analyst's work; this kit's
+job begins at the point where a number wants to be believed.
+
+Two consequences worth stating, because a first-time user reliably hits both.
+Bringing your own fitter means **its thresholds are yours to calibrate** —
+`workflows/calibrate-threshold.md`, scored on the quantity you actually rely on,
+with both error rates. And the calibrations shipped in `artifacts/*/examples/`
+are **evidence about ZnO impedance at one scale**; copying their numbers onto a
+different instrument or material is the precise failure the kit exists to stop.
+They are worked examples of the form, not defaults.
+
+## Tests
+
+```bash
+tests/run_all.sh
+```
+
+Three layers, in increasing order of what they can catch:
+
+| suite | what it catches |
+|---|---|
+| `run_end_to_end.sh` | the chain stopped working — replays a real dataset, asserts 17 permitted / 10 refused, split 7 biased and 3 imprecise |
+| `test_routing.py` | a verdict meaning different things to the emitter and to the gate |
+| `test_noise.py` | the routing itself: noisy → *imprecise*, mis-modelled → *biased*, unidentifiable → refused even when the fit is excellent |
+
+The last one needs synthetic data, and that is the point: the real dataset
+carries no label saying which measurements are genuinely noisy and which are
+genuinely mis-modelled, so it can show that the chain *runs* but never that it
+*routes correctly*. `tests/synth.py` builds a whole system — its own DATASET,
+ARTEFACT-SCAN, CALIBRATIONs and ANALYSIS-PLAN — with truth known by
+construction, which also exercises the path a new user takes.
+
 ## Worked example: ZnO thin films by direct-write ALD
 
 Two impedance datasets, 54 spectra, shipped in `artifacts/*/examples/`. Read in

@@ -60,6 +60,33 @@ SKIP = {"template.md", "rules.md", "checklist.md"}
 # a verdict that permits use of a parameter
 PERMISSIVE = re.compile(r"\b(usable|trustworthy|permitted)\b", re.I)
 REFUSING = re.compile(r"\b(not usable|refused|unusable|lower bound)\b", re.I)
+
+
+def verdict_permits(doc) -> bool:
+    """Does this VERDICT permit the parameter to be used?
+
+    One function, because the question was previously answered in two places
+    with the same two regexes composed in opposite orders, and only one order
+    was right. `PERMISSIVE` matches the bare word "usable" *inside* the phrase
+    "not usable", so `REFUSING and not PERMISSIVE` -- the form G4 used -- is
+    False on a refusal whose Call reads "not usable for R_gb". That is the
+    phrasing `emit_artifacts.py` writes for 25 of the 54 rows in this kit's own
+    provenance tables, so a FINDING marked `status: supported` could rest
+    entirely on refusing verdicts and still pass the gate that exists to stop
+    exactly that. Found by an independent run of the kit on Zhang et al. 2020
+    (Zenodo 3633835), 2026-09-21.
+
+    The frontmatter `status:` is authoritative when present: `emit_artifacts.py`
+    already computes it correctly, so re-deriving it by parsing prose is both
+    redundant and where the bug lived. Prose is the fallback for hand-written
+    verdicts, using the one composition that is correct -- permissive language
+    with no refusing language.
+    """
+    status = (doc.get("fm", {}).get("status") or "").strip().lower()
+    if status in ("permitted", "refused"):
+        return status == "permitted"
+    call = section(doc["text"], "Call")
+    return bool(PERMISSIVE.search(call)) and not REFUSING.search(call)
 # criteria a verdict must speak to; see artifacts/VERDICT/rules.md
 REQUIRED_EVIDENCE = ["identifiab", "misfit", "residual", "noise", "range"]
 BIAS_WORDS = re.compile(r"\b(biased|imprecise)\b", re.I)
@@ -189,7 +216,8 @@ def gate(docs: dict) -> tuple:
             ev = section(text, "Evidence")
             call = section(text, "Call")
             low = ev.lower()
-            if PERMISSIVE.search(call) and not REFUSING.search(call):
+            permits = verdict_permits(doc)
+            if permits:
                 missing = [c for c in REQUIRED_EVIDENCE if c not in low]
                 if missing:
                     bad(doc, "G1", "verdict permits use but Evidence is silent "
@@ -202,7 +230,7 @@ def gate(docs: dict) -> tuple:
             for c in cited - calib_ids:
                 bad(doc, "G2", f"Evidence cites {c}, which resolves to no "
                                f"CALIBRATION artifact")
-            if REFUSING.search(call) and not BIAS_WORDS.search(call):
+            if not permits and not BIAS_WORDS.search(call):
                 bad(doc, "G1", "verdict refuses a parameter without saying "
                                "whether it is biased (wrong model) or "
                                "imprecise (noise); these demand opposite "
@@ -237,10 +265,8 @@ def gate(docs: dict) -> tuple:
                 bad(doc, "G4", f"cites {u}, which resolves to no VERDICT")
             status = doc["fm"].get("status", "").lower()
             if status == "supported":
-                refused = [i for i in vids & set(index)
-                           if REFUSING.search(section(index[i]["text"], "Call"))
-                           and not PERMISSIVE.search(
-                               section(index[i]["text"], "Call"))]
+                refused = [i for i in sorted(vids & set(index))
+                           if not verdict_permits(index[i])]
                 if refused:
                     bad(doc, "G4", "status: supported, but rests on refusing "
                                    f"verdicts: {', '.join(sorted(refused))}")

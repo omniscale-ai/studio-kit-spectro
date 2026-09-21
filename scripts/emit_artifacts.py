@@ -53,8 +53,15 @@ DEFAULT_MAP = {
 # free-form parameter columns are everything else the user names
 PARAM_DEFAULT = ["R_s", "R_gb", "Q", "alpha", "tau"]
 
-PERMISSIVE = re.compile(r"trustworthy|usable|permitted", re.I)
-REFUSING = re.compile(r"not usable|refused|lower bound", re.I)
+# These two patterns MUST stay identical to the pair in graph_gate.py, and the
+# composition below MUST stay `permissive and not refusing`. The kit has been
+# bitten twice by this pair: G4 composed them in the opposite order and read
+# "not usable" as permitting, and these copies lacked word boundaries, so
+# "unusable" matched PERMISSIVE via the substring "usable" and emitted a
+# *permitted* verdict for a refusal. `tests/test_routing.py` asserts both files
+# agree, phrase by phrase.
+PERMISSIVE = re.compile(r"\b(usable|trustworthy|permitted)\b", re.I)
+REFUSING = re.compile(r"\b(not usable|refused|unusable|lower bound)\b", re.I)
 
 
 LEDGER = "emitted.json"
@@ -104,6 +111,26 @@ def num(row, col, default=float("nan")):
 
 def truthy(row, col):
     return (row.get(col) or "").strip().lower() in ("true", "1", "yes")
+
+
+def pct(x, digits=1):
+    """Render a fraction as a percentage without destroying small thresholds.
+
+    `f"{x*100:.0f}%"` printed the calibrated gates 0.008 and 0.006 both as
+    "1%", and 0.003 as "0%" -- a generated VERDICT misreporting the very
+    threshold it was judged against, and "> 0%" reads as no threshold at all.
+    Keep enough decimals that the value survives the round trip.
+    """
+    if isinstance(x, float) and (math.isnan(x) or math.isinf(x)):
+        return "—"
+    v = x * 100.0
+    if v == 0:
+        return "0%"
+    d = digits
+    while d < 6 and round(v, d) == 0:
+        d += 1
+    # drop trailing zeros so 15.0% stays "15%"
+    return f"{round(v, d):g}%"
 
 
 def fmt(x, unit="", digits=4):
@@ -164,7 +191,7 @@ Licensed by `{a.weighting_calib}`.
 |---|---|---|---|
 {chr(10).join(rows)}
 
-Median relative deviation over arc-bearing points: **{num(row, cmap['misfit'])*100:.1f}%**.
+Median relative deviation over arc-bearing points: **{pct(num(row, cmap['misfit']))}**.
 {'A parameter resting on a bound is not determined by the data.' if bound else ''}
 
 ## Attestation
@@ -220,11 +247,11 @@ date: {a.date}
 
 | criterion | measured | threshold | licensed by |
 |---|---|---|---|
-| identifiability | {'feature resolved inside the measured range' if closed else '**not resolved inside the measured range**'} | must resolve inside the window | `{a.misfit_calib}` |
-| misfit | {mis*100:.1f}% | < {a.misfit_max*100:.0f}% | `{a.misfit_calib}` |
-| residual structure | {resid_txt} | systematic and misfit > {a.resid_gate*100:.0f}% | `{a.residual_calib}` |
-| noise | {noise*100:.1f}% | < {a.noise_max*100:.0f}% | `{a.misfit_calib}` |
-| instrument range | see `{a.dataset}` | dataset-declared trusted range | `{a.weighting_calib}` |
+| identifiability | {'feature resolved inside the measured range' if closed else '**not resolved inside the measured range**'} | must resolve inside the window | `{a.identifiability_calib}` |
+| misfit | {pct(mis)} | < {pct(a.misfit_max)} | `{a.misfit_calib}` |
+| residual structure | {resid_txt} | {a.resid_rule} | `{a.residual_calib}` |
+| noise | {pct(noise)} | < {pct(a.noise_max)} | `{a.noise_calib}` |
+| instrument range | see `{a.dataset}` | dataset-declared trusted range | `{a.range_calib}` |
 
 ## Call
 
@@ -257,6 +284,25 @@ def main() -> int:
     p.add_argument("--misfit-max", type=float, default=0.15)
     p.add_argument("--resid-gate", type=float, default=0.10)
     p.add_argument("--noise-max", type=float, default=0.35)
+    # Which calibration licenses which criterion. These used to be hard-wired
+    # to --misfit-calib and --weighting-calib, which is wrong for any pipeline
+    # whose window/identifiability work is a separate calibration: the Evidence
+    # table then cited a real artifact that had not scored that criterion, and
+    # G2 passed because the id resolved.
+    p.add_argument("--identifiability-calib", default="",
+                   help="licenses the identifiability row "
+                        "(default: --misfit-calib)")
+    p.add_argument("--range-calib", default="",
+                   help="licenses the instrument-range row "
+                        "(default: --weighting-calib)")
+    p.add_argument("--noise-calib", default="",
+                   help="licenses the noise row (default: --misfit-calib)")
+    p.add_argument("--resid-rule", default="",
+                   help="the deployed residual-structure rule, verbatim "
+                        "(default: 'systematic and misfit > <resid-gate>'). "
+                        "A conjunction of other statistics cannot be written "
+                        "in the default phrasing, and the rule that is "
+                        "calibrated must be the rule that is printed.")
     a = p.parse_args()
 
     if not a.date:
@@ -265,6 +311,12 @@ def main() -> int:
         import datetime
         a.date = datetime.date.fromtimestamp(
             Path(a.csv).stat().st_mtime).isoformat()
+
+    # default each criterion's licensing calibration to the old behaviour
+    a.identifiability_calib = a.identifiability_calib or a.misfit_calib
+    a.range_calib = a.range_calib or a.weighting_calib
+    a.noise_calib = a.noise_calib or a.misfit_calib
+    a.resid_rule = a.resid_rule or f"systematic and misfit > {pct(a.resid_gate)}"
 
     cmap = dict(DEFAULT_MAP)
     for kv in a.map:

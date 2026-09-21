@@ -79,6 +79,24 @@ python3 scripts/emit_artifacts.py results.csv \
     --map verdict=usability reasons=why
 ```
 
+**Per-criterion calibrations.** By default the identifiability and
+instrument-range rows cite `--misfit-calib` and `--weighting-calib`. If a
+different calibration licensed them — a window study, say — name it, or the
+Evidence table cites a real artifact that never scored that criterion and G2
+passes because the id resolves:
+
+```bash
+    --identifiability-calib cpt-mysys-calib-window \
+    --range-calib           cpt-mysys-calib-window \
+    --noise-calib           cpt-mysys-calib-noise \
+    --resid-rule 'amplitude > 0.003 AND |z| > 3'
+```
+
+`--resid-rule` matters when the deployed rule is not of the form the default
+phrasing assumes (`systematic and misfit > X`). **The rule that is calibrated
+must be the rule that is printed** — a conjunction has error rates its
+components do not.
+
 `emit_artifacts.py` refuses to overwrite: if two measurements slugify to the
 same artifact id — which happens when labels are conditions rather than sample
 ids, and two datasets share a grid — it exits 2 rather than silently replacing
