@@ -36,16 +36,22 @@ BEFORE=$(tree_sum)
 
 hr() { printf '\n\033[1m──────── %s ────────\033[0m\n' "$1"; }
 
-hr "1/4  end-to-end on real data"
+hr "1/6  end-to-end on real data"
 if bash tests/run_end_to_end.sh; then :; else fail=1; fi
 
-hr "2/4  verdict routing (G4 regression)"
+hr "2/6  verdict routing, output format, extra criteria"
 if $PY tests/test_routing.py; then :; else fail=1; fi
 
-hr "3/4  noise, bias and identifiability"
+hr "3/6  noise, bias and identifiability"
 if $PY tests/test_noise.py; then :; else fail=1; fi
 
-hr "4/4  the suite left the working tree untouched"
+hr "4/6  completeness: the ledger sees every emit (G8)"
+if $PY tests/test_completeness.py; then :; else fail=1; fi
+
+hr "5/6  axis kind: no supported trend along a synthesis axis (G9)"
+if $PY tests/test_axis_kind.py; then :; else fail=1; fi
+
+hr "6/6  the suite left the working tree untouched"
 if [ "$(tree_sum)" = "$BEFORE" ]; then
   printf '  ok   no shipped artifact was modified\n'
 else

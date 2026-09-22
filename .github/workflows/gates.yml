@@ -78,3 +78,23 @@ jobs:
       # The real dataset cannot test this; it carries no labels.
       - name: Noise, bias and identifiability are told apart
         run: python3 tests/test_noise.py
+
+  completeness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # One fit commonly yields several parameters, and FIT/VERDICT pair
+      # one-to-one, so each needs its own emit. The ledger used to keep only
+      # the last, and G8 was asking a complete question of an incomplete record.
+      - name: The ledger records every emit from a DATASET
+        run: python3 tests/test_completeness.py
+
+  axis-kind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The kit's flagship failure: a rate law fitted along an axis where every
+      # value is a different sample. G5 made the DATASET declare the kind;
+      # nothing made a FINDING respect it until G9.
+      - name: No supported trend along a synthesis axis
+        run: python3 tests/test_axis_kind.py

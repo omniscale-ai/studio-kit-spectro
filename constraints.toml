@@ -226,6 +226,13 @@ pattern = "Claim"
 description = "The physical claim, stated so it could be wrong."
 
 [[artifacts.FINDING.headings]]
+id = "fnd-axis"
+level = 2
+required = true
+pattern = "Claimed Axis"
+description = "The condition axis the claim varies along, named in backticks with its DATASET, or 'none'. Must be a row of that DATASET's Condition Axes table. G9 fails a `supported` claim whose axis was declared SYNTHESIS: every value there is a different sample, so a fitted trend is a synthesis contrast, not a rate law."
+
+[[artifacts.FINDING.headings]]
 id = "fnd-support"
 level = 2
 required = true

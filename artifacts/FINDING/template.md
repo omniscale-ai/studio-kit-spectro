@@ -17,6 +17,20 @@ date: {YYYY-MM-DD}
 {The physical claim, stated so that it could be wrong. Include the quantity,
 its value, and the population it is claimed over.}
 
+## Claimed Axis
+
+{The condition axis this claim varies along, named in backticks together with
+the DATASET it belongs to:
+
+`deposition temperature` in `cpt-{system}-dataset-{slug}`
+
+It must be a row of that DATASET's Condition Axes table, and G9 reads the kind
+it was declared with. A claim marked `supported` may not run along an axis
+declared SYNTHESIS — every value there is a different sample, so what looks
+like a rate law is a synthesis contrast.
+
+Write `none` if the claim is not a trend across a condition axis at all.}
+
 ## Supporting Verdicts
 
 {Every VERDICT this rests on: `cpt-{system}-verdict-{slug}`.

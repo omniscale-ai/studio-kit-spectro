@@ -233,6 +233,57 @@ with tempfile.TemporaryDirectory() as td:
     check(rc == 0, "gate passes with per-criterion calibrations")
 
 
+print("\n=== 4. generated artifacts carry the Table of Contents cfs requires ===")
+
+# The emitter never wrote one, so `cfs validate` failed the kit's own emitted
+# output with one error per artifact while `graph_gate.py` said PASS -- and
+# there was no legitimate fix, because G7 forbids hand-editing a generated
+# record and running `cfs toc` on one is exactly that. Found by the Pd-Si field
+# test, 2026-09-22.
+rows = synth.ladder([0.01], n_per=2, arms=("good", "wrongmodel"))
+with tempfile.TemporaryDirectory() as td:
+    art = build(Path(td), rows)
+    for kind, wanted in (("FIT", "Measurement"), ("VERDICT", "Evidence")):
+        docs = [p.read_text(encoding="utf-8")
+                for p in (art / kind).glob("*.md")
+                if p.name not in {"template.md", "rules.md", "checklist.md"}]
+        check(bool(docs) and all("<!-- toc -->" in d for d in docs),
+              f"every generated {kind} opens a <!-- toc --> block")
+        check(all("<!-- /toc -->" in d for d in docs),
+              f"every generated {kind} closes it")
+        check(all(f"- [{wanted}](#{wanted.lower()})" in d for d in docs),
+              f"the {kind} toc links its own sections (e.g. {wanted})")
+    # the block must sit between the H1 and the ID line, as cfs toc places it
+    d = next(p.read_text(encoding="utf-8") for p in (art / "FIT").glob("*.md")
+             if p.name not in {"template.md", "rules.md", "checklist.md"})
+    check(d.index("# Fit") < d.index("<!-- toc -->") < d.index("**ID**"),
+          "the toc sits between the H1 and the ID line")
+
+
+print("\n=== 5. an extra Evidence criterion can be declared and is gated ===")
+
+with tempfile.TemporaryDirectory() as td:
+    art = build(Path(td), rows, extra=[
+        "--extra-criterion",
+        f"crystallinity|noise|> 3x background|{synth.CALIBS['noise']}"])
+    d = next(p.read_text(encoding="utf-8")
+             for p in (art / "VERDICT").glob("*.md")
+             if p.name not in {"template.md", "rules.md", "checklist.md"})
+    check("| crystallinity |" in d, "the extra criterion appears in Evidence")
+    check(synth.CALIBS["noise"] in d.split("| crystallinity |")[1][:200],
+          "it cites the calibration that licenses it")
+    rc, _ = run_gate(art)
+    check(rc == 0, "gate passes with a sixth criterion")
+
+    # and the citation is enforced: a made-up calibration id must fail G2
+    art2 = build(Path(td) / "b", rows, extra=[
+        "--extra-criterion",
+        "crystallinity|noise|> 3x background|cpt-synth-calib-nosuch"])
+    rc, out = run_gate(art2)
+    check(rc != 0 and "G2" in out,
+          "an extra criterion citing a nonexistent calibration FAILS G2")
+
+
 print()
 if fails:
     print(f"FAIL — {len(fails)} check(s) failed")

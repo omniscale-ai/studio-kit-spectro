@@ -220,8 +220,13 @@ with tempfile.TemporaryDirectory() as td:
         if r["truth"] in RIGHT_MODEL and not v[r["label"]][0]:
             noisy_ids.append(
                 f"cpt-{synth.SYSTEM}-verdict-{emit.slugify(r['label'])}")
+    # The axis is declared honestly: this IS a trend, and along the MEASUREMENT
+    # axis, so G9 has no objection. What must stop it is G4 — the verdicts it
+    # rests on were refused for noise. Declaring `none` here would have let the
+    # check pass for the wrong reason.
     synth.write_finding(art, "noise-claim", "supported", noisy_ids[:6],
-                        "R_ct increases with injected noise")
+                        "R_ct increases with injected noise",
+                        axis=f"`injected noise level` in `{synth.DATASET_ID}`")
     rc = subprocess.run([sys.executable, str(ROOT / "scripts" / "graph_gate.py"),
                          str(art)], capture_output=True, text=True)
     out = rc.stdout + rc.stderr

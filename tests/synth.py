@@ -231,7 +231,7 @@ generator defines it; there is no instrument to distrust.
 | axis | values | kind |
 |---|---|---|
 | injected noise level | 0.002 – 0.30 | MEASUREMENT |
-| arm (good / noisy / wrongmodel / truncated) | 4 | SYNTHESIS |
+| arm | good / noisy / wrongmodel / truncated | SYNTHESIS |
 
 The arm is a SYNTHESIS axis: it changes which object is being measured, not how
 it is measured. No trend may be fitted across it.
@@ -384,8 +384,14 @@ Kit test suite, 2026-09-21.
 
 
 def write_finding(art: Path, slug: str, status: str, verdict_ids: list,
-                  claim: str) -> Path:
-    """A FINDING resting on the given verdicts. Used to exercise G4."""
+                  claim: str, axis: str = "none") -> Path:
+    """A FINDING resting on the given verdicts. Exercises G4 and G9.
+
+    `axis` is the Claimed Axis section's first paragraph verbatim: "none", or
+    something naming an axis and its DATASET in backticks. The DATASET this
+    module writes declares `injected noise level` MEASUREMENT and `arm`
+    SYNTHESIS, so both outcomes are reachable.
+    """
     p = art / "FINDING" / f"synth-{slug}.md"
     cites = "\n".join(f"- `{v}`" for v in verdict_ids)
     p.write_text(f"""---
@@ -396,6 +402,10 @@ date: 2026-09-21
 # Finding — {claim}
 
 **ID**: `cpt-{SYSTEM}-finding-{slug}`
+
+## Claimed Axis
+
+{axis}
 
 ## Claim
 

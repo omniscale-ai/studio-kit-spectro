@@ -63,7 +63,7 @@ what to do next.
    sections, ID grammar `cpt-{system}-{dataset|scan|fit|verdict|calib|finding|aplan}-{slug}`.
 2. `scripts/` — computational gates. `emit_artifacts.py` *generates* FIT and
    VERDICT records from a pipeline's result table; `graph_gate.py` enforces
-   eight cross-artifact rules that static validation cannot express.
+   nine cross-artifact rules that static validation cannot express.
 3. `workflows/` — agent routes with hard rules (a parameter may never be
    reported without its verdict; a rate law may never be fitted across a
    synthesis axis).
@@ -104,8 +104,10 @@ Three layers, in increasing order of what they can catch:
 | suite | what it catches |
 |---|---|
 | `run_end_to_end.sh` | the chain stopped working — replays a real dataset, asserts 17 permitted / 10 refused, split 7 biased and 3 imprecise |
-| `test_routing.py` | a verdict meaning different things to the emitter and to the gate |
+| `test_routing.py` | a verdict meaning different things to the emitter and to the gate; generated artifacts missing the `<!-- toc -->` block `cfs validate` requires; an extra Evidence criterion citing a calibration that does not exist |
 | `test_noise.py` | the routing itself: noisy → *imprecise*, mis-modelled → *biased*, unidentifiable → refused even when the fit is excellent |
+| `test_completeness.py` | a second emit from one DATASET erasing the first from the ledger G8 reads |
+| `test_axis_kind.py` | a `supported` claim fitted along an axis the DATASET declares SYNTHESIS |
 
 The last one needs synthetic data, and that is the point: the real dataset
 carries no label saying which measurements are genuinely noisy and which are

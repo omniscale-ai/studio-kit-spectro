@@ -75,8 +75,22 @@ def write_ledger(out: Path, a, rows, emitted: list) -> None:
     on the run that motivated this, the gates passed on half the data. So the
     emitting step states its own count and ids, and the gate compares.
 
-    Entries are merged per dataset, never overwritten wholesale: a tree is
-    normally built by one emit per dataset.
+    Entries are keyed by dataset AND by source table, and the dataset's `ids`
+    are the UNION over its sources.
+
+    The previous version wrote `doc[dataset] = {... ids: this emit's ids}`,
+    which silently discarded the ids of every earlier emit from the same
+    DATASET. That is not an exotic case: a single fit commonly yields more than
+    one parameter, FIT and VERDICT pair one-to-one (G8), so each parameter needs
+    its own emit -- and the second one erased the first from the ledger. Found
+    by an independent field test on synchrotron XRD (Pd-Si, Zenodo 20798555,
+    2026-09-22), which then deleted all 150 artifacts of the run's PRIMARY
+    parameter and watched graph_gate report PASS. That is the same silent loss
+    G8 was added to prevent, one level up, inside the mechanism meant to prevent
+    it.
+
+    Re-emitting the same source replaces only that source's entry, so a re-run
+    is idempotent rather than doubling the counts.
     """
     import json
 
@@ -87,9 +101,24 @@ def write_ledger(out: Path, a, rows, emitted: list) -> None:
             doc = json.loads(path.read_text(encoding="utf-8"))
         except ValueError:
             doc = {}
+
+    entry = doc.get(a.dataset) or {}
+    emits = dict(entry.get("emits") or {})
+    # migrate a ledger written by the pre-fix version, which had no `emits`
+    if not emits and entry.get("ids"):
+        emits[entry.get("source", "<unknown>")] = dict(
+            date=entry.get("date", ""),
+            n_measurements=entry.get("n_measurements", len(entry["ids"]) // 2),
+            attest=entry.get("attest", ""), ids=sorted(entry["ids"]))
+
+    emits[str(a.csv)] = dict(date=a.date, n_measurements=len(rows),
+                             attest=a.attest, ids=sorted(emitted))
+
+    all_ids = sorted({i for e in emits.values() for i in e["ids"]})
     doc[a.dataset] = dict(
-        source=str(a.csv), system=a.system, scan=a.scan, date=a.date,
-        n_measurements=len(rows), attest=a.attest, ids=sorted(emitted))
+        system=a.system, scan=a.scan, sources=sorted(emits),
+        n_measurements=sum(e["n_measurements"] for e in emits.values()),
+        emits=emits, ids=all_ids)
     path.write_text(json.dumps(doc, indent=1, sort_keys=True) + "\n",
                     encoding="utf-8")
 
@@ -133,6 +162,46 @@ def pct(x, digits=1):
     return f"{round(v, d):g}%"
 
 
+def extra_rows(row, a) -> str:
+    """Extra Evidence rows from --extra-criterion, one per flag.
+
+    Returns "" when none were given, so the table is byte-identical to before
+    for every existing caller.
+    """
+    out = []
+    for spec in getattr(a, "extra_criterion", []) or []:
+        parts = [s.strip() for s in spec.split("|")]
+        if len(parts) != 4:
+            raise SystemExit(
+                f"--extra-criterion needs 4 |-separated fields "
+                f"(LABEL|VALUE|THRESHOLD|CALIB-ID), got {len(parts)}: {spec!r}")
+        label, value, thresh, calib = parts
+        # a CSV column if one matches, else the literal text
+        if value in row:
+            v = (row.get(value) or "").strip() or "—"
+        else:
+            v = value
+        out.append(f"| {label} | {v} | {thresh} | `{calib}` |")
+    return "\n".join(out)
+
+
+def toc(sections):
+    """The `<!-- toc -->` block `cfs validate` requires, in its own format.
+
+    The emitter never wrote one. The shipped examples have one because they
+    were hand-fixed with `cfs toc`, so the kit's two validation layers
+    disagreed about the emitter's own output: `graph_gate.py` said PASS on a
+    tree that `cfs validate` failed with one error per generated artifact
+    ("Document has headings but no Table of Contents section"). And there was
+    no legitimate way out -- G7 forbids hand-editing a script-generated record,
+    which is exactly what running `cfs toc` on one would be. Found by the Pd-Si
+    field test, 2026-09-22.
+    """
+    links = "\n".join(f"- [{s}](#{s.lower().replace(' ', '-')})"
+                      for s in sections)
+    return f"\n<!-- toc -->\n\n{links}\n\n<!-- /toc -->\n"
+
+
 def fmt(x, unit="", digits=4):
     if isinstance(x, float) and (math.isnan(x) or math.isinf(x)):
         return "—"
@@ -164,7 +233,7 @@ date: {a.date}
 ---
 
 # Fit — {label}
-
+{toc(["Measurement", "Model", "Weighting", "Parameters", "Attestation"])}
 **ID**: `cpt-{a.system}-fit-{slug}`
 
 ## Measurement
@@ -236,7 +305,7 @@ date: {a.date}
 ---
 
 # Verdict — {label}
-
+{toc(["Fit", "Evidence", "Call", "Attestation"])}
 **ID**: `cpt-{a.system}-verdict-{slug}`
 
 ## Fit
@@ -252,6 +321,7 @@ date: {a.date}
 | residual structure | {resid_txt} | {a.resid_rule} | `{a.residual_calib}` |
 | noise | {pct(noise)} | < {pct(a.noise_max)} | `{a.noise_calib}` |
 | instrument range | see `{a.dataset}` | dataset-declared trusted range | `{a.range_calib}` |
+{extra_rows(row, a)}
 
 ## Call
 
@@ -297,6 +367,20 @@ def main() -> int:
                         "(default: --weighting-calib)")
     p.add_argument("--noise-calib", default="",
                    help="licenses the noise row (default: --misfit-calib)")
+    # D4: the Evidence table was a fixed five rows with no way to add one.
+    # USAGE said "edit artifacts/VERDICT/rules.md if your domain needs a sixth"
+    # -- but rules.md is in graph_gate's SKIP set and never parsed, and
+    # REQUIRED_EVIDENCE is a hard-coded list, so editing it changed nothing.
+    # The documented extension path was inert, and the field test's two extra
+    # criteria ended up in free-text `reasons`: thresholds with no calibration,
+    # which is what carrying rule 2 forbids. An extra row here is cited like
+    # any other and is therefore gated by G2.
+    p.add_argument("--extra-criterion", action="append", default=[],
+                   metavar="LABEL|VALUE|THRESHOLD|CALIB-ID",
+                   help="append a row to every VERDICT's Evidence table. "
+                        "VALUE is a CSV column name if one matches, else "
+                        "literal text. Repeatable. The five built-in criteria "
+                        "are a minimum, not a maximum.")
     p.add_argument("--resid-rule", default="",
                    help="the deployed residual-structure rule, verbatim "
                         "(default: 'systematic and misfit > <resid-gate>'). "

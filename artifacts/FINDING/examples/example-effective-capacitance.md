@@ -28,6 +28,15 @@ processes, which would give nanofarads to microfarads.
 
 The claim is about magnitude and its interpretation, not about any trend.
 
+## Claimed Axis
+
+`none` — this is a statement about the magnitude of a quantity over a
+population, not a trend along a condition axis. Nothing is fitted against
+deposition temperature, print speed or illumination; the claim would stand if
+the grid had been a single coupon measured many times. That is also why it
+survives while the activation-energy finding does not: it never crosses an axis
+at all.
+
 ## Supporting Verdicts
 
 Rests only on fits whose R_gb, Q and α are permitted, including

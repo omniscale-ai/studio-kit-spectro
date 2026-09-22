@@ -25,6 +25,17 @@ resistances across the 150 / 200 / 250 °C labels gives Eₐ = 251 meV
 **This claim is retracted.** It is not an activation energy. Three independent
 reasons follow, each sufficient on its own.
 
+## Claimed Axis
+
+`deposition temperature` in `cpt-zno-dataset-cseries`.
+
+That axis is declared **SYNTHESIS**, and this is the whole reason the claim is
+retracted: every value of it is a different film, all measured at one bench
+temperature, so `R(T) = R₀·exp(Eₐ/kT)` fitted along it returns a number with
+units of energy describing a synthesis trend. Had G9 existed when this was
+written, `status: supported` would have been refused here rather than caught a
+month later by reading the file headers.
+
 ## Supporting Verdicts
 
 Originally rested on the dark-spectrum resistances of both sets, including:

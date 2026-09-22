@@ -57,6 +57,10 @@ Other things worth breaking, to see what the gates are for:
 | remove the Attestation from a VERDICT | G7 | records of automated steps must name the script |
 | delete one dataset's FIT and VERDICT files | G8 | the tree lacks artifacts `emitted.json` says were written |
 | point a VERDICT's Evidence at a calibration that does not exist | G2 | unresolved threshold licence |
+| mark a finding `supported` whose Claimed Axis is a SYNTHESIS row | G9 | every value of that axis is a different sample, so the trend is a synthesis contrast |
+| omit a criterion from a permitting VERDICT's Evidence | G1 | a verdict must speak to all five |
+| state a detection rate with no false-positive rate | G3 | a rule that fires on everything detects everything |
+| mark an ANALYSIS-PLAN `approved` with an empty Approval | G6 | approval must name who and when |
 
 ## 3. Generate FIT and VERDICT artifacts from your own pipeline
 
@@ -159,8 +163,21 @@ The kit is not impedance-specific. To adapt it:
   your instrument's. The requirement is that a range exists and is stated.
 - **VERDICT** — the five criteria (identifiability, misfit, residual structure,
   noise, instrument range) are general to model fitting. Edit
-  `artifacts/VERDICT/rules.md` if your domain needs a sixth; `graph_gate.py`
-  reads its list from `REQUIRED_EVIDENCE`.
+  `artifacts/VERDICT/rules.md` records what the five mean for your domain.
+  **If you need a sixth, declare it with `--extra-criterion`** — the five are a
+  minimum, not a maximum, and a declared row is cited like any other and so is
+  gated by G2:
+
+  ```bash
+      --extra-criterion 'crystallinity|cryst_frac|> 3x background|cpt-mysys-calib-cryst'
+  ```
+
+  The second field is a CSV column name if one matches, else literal text.
+  (Earlier versions of this file said to edit `rules.md` and that
+  `graph_gate.py` would read the list from it. It does not: `rules.md` is in
+  the gate's `SKIP` set and `REQUIRED_EVIDENCE` is a hard-coded minimum, so
+  editing `rules.md` changed nothing and domain criteria ended up in free-text
+  `reasons` — thresholds with no calibration, which carrying rule 2 forbids.)
 - **CALIBRATION** — unchanged. "Score on the quantity you care about, report
   both error rates, score the rule you deploy" is domain-independent.
 - **FINDING** — the confound table's rows (geometry, axis kind, instrument

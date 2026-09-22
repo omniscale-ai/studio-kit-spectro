@@ -41,6 +41,21 @@ way; the docstring for each names the failure it prevents.
       exactly as well-formed as a whole one. G1-G7 ask whether what is present
       is sound; only G8 asks whether it is all there.
 
+      A second instance, found 2026-09-22: the ledger G8 reads was itself
+      keyed so that a second emit from one DATASET erased the first, which is
+      the normal case when a fit yields more than one parameter. The gate was
+      asking a complete question of an incomplete record. See
+      `emit_artifacts.write_ledger`.
+
+  G9  A FINDING marked `supported` may not claim a trend along a condition axis
+      the DATASET declares SYNTHESIS. Failure prevented: the kit's own flagship
+      example -- a rate law fitted across an axis where every value is a
+      different sample -- reproduced on a second technique and passing all
+      eight of the other gates. G5 made the DATASET *declare* each axis kind;
+      nothing made a FINDING *respect* the declaration, so the rule lived in
+      FINDING/rules.md, in the template's confound table, and in G4's own
+      docstring, and was enforced nowhere.
+
 Usage:  python3 graph_gate.py <artifacts-root> [--json]
 Exit:   0 all gates pass, 1 violations found, 2 usage/parse error.
 """
@@ -60,6 +75,28 @@ SKIP = {"template.md", "rules.md", "checklist.md"}
 # a verdict that permits use of a parameter
 PERMISSIVE = re.compile(r"\b(usable|trustworthy|permitted)\b", re.I)
 REFUSING = re.compile(r"\b(not usable|refused|unusable|lower bound)\b", re.I)
+# a Claimed Axis that declares the finding is not a trend across one
+NO_AXIS = re.compile(r"^\s*(none|n/?a|not a trend)\b", re.I)
+
+
+def condition_axes(doc) -> dict:
+    """{axis name (lowercased) -> 'MEASUREMENT'|'SYNTHESIS'} for a DATASET.
+
+    The kind is searched for anywhere in the row, like G5 does, so the column
+    order of the Condition Axes table is not load-bearing.
+    """
+    out = {}
+    for line in section(doc["text"], "Condition Axes").splitlines():
+        line = line.strip()
+        if not line.startswith("|") or "---" in line:
+            continue
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        if not cells or not cells[0]:
+            continue
+        m = re.search(r"\b(measurement|synthesis)\b", line, re.I)
+        if m:
+            out[cells[0].lower().strip("* `")] = m.group(1).upper()
+    return out
 
 
 def verdict_permits(doc) -> bool:
@@ -87,6 +124,8 @@ def verdict_permits(doc) -> bool:
         return status == "permitted"
     call = section(doc["text"], "Call")
     return bool(PERMISSIVE.search(call)) and not REFUSING.search(call)
+
+
 # criteria a verdict must speak to; see artifacts/VERDICT/rules.md
 REQUIRED_EVIDENCE = ["identifiab", "misfit", "residual", "noise", "range"]
 BIAS_WORDS = re.compile(r"\b(biased|imprecise)\b", re.I)
@@ -274,6 +313,46 @@ def gate(docs: dict) -> tuple:
                               ("Reproduction", rep)):
                 if not sec.strip() or PLACEHOLDER.search(sec):
                     bad(doc, "G4", f"{name} is empty")
+
+            # G9 -- a supported trend may not run along a SYNTHESIS axis
+            ax = section(text, "Claimed Axis")
+            if not ax.strip() or PLACEHOLDER.search(ax):
+                bad(doc, "G9", "Claimed Axis is empty; state the condition "
+                               "axis this claim varies along, or 'none' if the "
+                               "claim is not a trend across one")
+            elif not NO_AXIS.match(ax.strip().lstrip("`*_ ")):
+                # Only the FIRST paragraph declares the axis; everything after
+                # it is prose that may legitimately quote formulae or statuses
+                # in backticks, and an earlier version read those as axis names.
+                head = ax.strip().split("\n\n")[0]
+                names = re.findall(r"`([^`]+)`", head)
+                ds_ids = [n for n in names if "-dataset-" in n]
+                axis_names = [n for n in names if "-dataset-" not in n][:1]
+                if not ds_ids or not axis_names:
+                    bad(doc, "G9", "Claimed Axis must name both the DATASET "
+                                   "and the axis in backticks, e.g. "
+                                   "`deposition temperature` in "
+                                   "`cpt-sys-dataset-run1`")
+                else:
+                    kinds = {}
+                    for d in ds_ids:
+                        if d in index:
+                            kinds.update(condition_axes(index[d]))
+                        else:
+                            bad(doc, "G9", f"Claimed Axis cites {d}, which "
+                                           f"resolves to no DATASET")
+                    for anm in axis_names:
+                        kind = kinds.get(anm.lower().strip("* "))
+                        if kind is None:
+                            bad(doc, "G9", f"Claimed Axis names '{anm}', which "
+                                           f"is not a row of that DATASET's "
+                                           f"Condition Axes table")
+                        elif kind == "SYNTHESIS" and status == "supported":
+                            bad(doc, "G9", f"status: supported, but the claim "
+                                           f"runs along '{anm}', declared "
+                                           f"SYNTHESIS: every value is a "
+                                           f"different sample, so this is a "
+                                           f"synthesis contrast, not a rate law")
 
         # G5 -- condition axes declared
         if kind == "DATASET":
