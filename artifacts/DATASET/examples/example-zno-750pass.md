@@ -63,11 +63,32 @@ Thickness is recorded (`Thickness - 750 passe.xlsx`): 32.5–38.6 nm at 150 °C,
 53.4–55.9 nm at 200 °C, 69.4–73.2 nm at 250 °C — a factor 2.25 across the grid,
 correlated with the deposition-temperature axis.
 
-**Electrode spacing L and width w were not recorded for this set.** Resistivity
-and sheet resistance are therefore **unreportable** here; only thickness can be
-divided out. The companion C-series does have full geometry, and there the
-geometric factor L/(w·d) spans a factor 3.96 across the same nominal grid —
-against a resistance trend of 9.4×.
+**Electrode spacing L = 1.05 mm, constant across the cohort.** Recorded in the
+Gamry `NOTES` block of every file — "1.05mm gap" in all 28 EIS files,
+"gap-1.05mm" in all 17 photocurrent files.
+
+**Width w = 0.395 mm is stated, not recorded.** The experimentalist states the
+line width is the same mask as the C-series. It appears in no file header. It
+enters ρ linearly, so it scales every resistivity here and cancels from every
+ratio across the grid. Unresolved: the 27 I–V files carry an unlabelled
+two-line note, identical in each — `1,0217 mm` and `0,9229 mm`. If those are
+gap and width rather than two measurements of the gap, w = 0.923 mm and every
+resistivity from this set is low by 2.34×.
+
+Because L is constant here, the geometric factor L/(w·d) varies **only through
+thickness, 2.25×**. In the companion C-series L runs 1.03–2.34 mm and is
+correlated with the deposition-temperature label, so its geometric factor spans
+3.96× against a resistance trend of 9.4×. This set is the better one for a
+materials comparison, not the worse one.
+
+> **Corrected 2026-09-22.** This artifact previously read "Electrode spacing L
+> and width w were not recorded for this set. Resistivity and sheet resistance
+> are therefore **unreportable** here." That was wrong, and it stood for a
+> month: the gap was in the file headers the whole time, in a block the reader
+> parsed past. The claim was about the *dataset*, not about any fit, so no
+> verdict or calibration could have caught it — which is the argument for
+> DATASET being an artifact that someone reads, rather than a preamble.
+> Caught by the experimentalist on review.
 
 ## Provenance
 
