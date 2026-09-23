@@ -18,3 +18,14 @@
    across candidates, this calibration cannot choose between them; say so
    rather than picking one and implying it was measured.
 7. **Reproducible.** Seeds and invocation in Attestation. Enforced by G7.
+
+8. **Attest the library build, not just its version string.** A version number
+   identifies a release; it does not identify the code that ran. This kit's own
+   worked example was fitted with a *fork* of `impedance.py` whose
+   `__version__` read `1.7.1` — the same string as the stock release it was
+   not — carrying two extra modules and ~266 modified lines. For a month
+   nothing said so, and anyone re-deriving these numbers from
+   `pip install impedance==1.7.1` would have got different answers with no way
+   to find out why. Name the fork and the commit:
+   `impedance 1.7.1+atlant.1 (fork of ECSHackWeek/impedance.py @ 6a269c4)`.
+   G7 checks an Attestation exists; only you can make it true.

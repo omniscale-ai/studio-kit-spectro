@@ -71,4 +71,5 @@ to 1.0%, on a quantity the fit does not target.
 ## Attestation
 
 `eis_suite.fit.fit_single_arc` via `eis_suite.pipeline.analyze_spectrum`,
-eis_suite @ 2026-08-19, `python run_series.py 750pass`.
+eis_suite @ 2026-08-19 on impedance 1.7.1+atlant.1
+(fork of ECSHackWeek/impedance.py @ 6a269c4), `python run_series.py 750pass`.

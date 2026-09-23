@@ -63,5 +63,6 @@ impossible. No point is dropped without a named cause.
 
 ## Attestation
 
-`eis_suite.artefacts.detect_mains` / `diagnose`, eis_suite @ 2026-08-19,
+`eis_suite.artefacts.detect_mains` / `diagnose`, eis_suite @ 2026-08-19 on impedance 1.7.1+atlant.1
+(fork of ECSHackWeek/impedance.py @ 6a269c4),
 invoked via `python run_series.py 750pass`.

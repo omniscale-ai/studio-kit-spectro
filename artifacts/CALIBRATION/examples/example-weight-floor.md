@@ -83,5 +83,6 @@ bound (a false claim of determination) occur in 4 of 117 cases; at 0.0 the
 
 ## Attestation
 
-`exp_floor_calibration.py`, eis_suite @ 2026-08-19, seeds from
+`exp_floor_calibration.py`, eis_suite @ 2026-08-19 on impedance 1.7.1+atlant.1
+(fork of ECSHackWeek/impedance.py @ 6a269c4), seeds from
 `bench_synth.build_cases()` (deterministic, 0–2 per grid point).
