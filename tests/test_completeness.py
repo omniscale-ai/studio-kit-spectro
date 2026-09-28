@@ -156,6 +156,40 @@ with tempfile.TemporaryDirectory() as td:
     check(rc == 0, "gate passes on the migrated tree")
 
 
+print("\n=== 4. G8 reads the kind from its position in the id, not by substring ===")
+
+# A FINDING about a property named R_fit has "-fit-" inside its slug. A first
+# version of G8 matched that substring anywhere, took the finding for a FIT,
+# and failed the tree for a missing VERDICT -- 28 times on the first run of
+# machine-emitted findings. Likewise a FIT whose slug contains "-verdict-"
+# must not be taken for a VERDICT.
+with tempfile.TemporaryDirectory() as td:
+    td = Path(td)
+    art = synth.build_tree(td)
+    rows = param_rows("r-fit", 3)          # slug will contain "-fit-"
+    for r in rows:
+        r["label"] = r["label"].replace("r-fit-", "verdict-of-r-fit-")
+    a = synth.write_table(td / "t.csv", rows)
+    emit(art, a)
+    ids = []
+    for p in (art / "VERDICT").glob("*.md"):
+        if p.name in {"template.md", "rules.md", "checklist.md"}:
+            continue
+        t = p.read_text(encoding="utf-8")
+        if t.startswith("---\nstatus: permitted"):
+            ids.append(next(l for l in t.splitlines() if l.startswith("**ID**")).split("`")[1])
+    check(bool(ids), f"{len(ids)} verdicts emitted whose slugs contain '-fit-' and '-verdict-'")
+    synth.write_finding(art, "r-fit-trend", "supported", ids,
+                        "R_fit rises with noise level",
+                        axis=f"`injected noise level` in `{synth.DATASET_ID}`")
+    rc, out = gate(art)
+    check(rc == 0, "gate PASSES: a finding id containing '-fit-' is not mistaken "
+                   "for a FIT, and fit/verdict ids containing the other kind's word "
+                   "still pair")
+    if rc != 0:
+        print("        " + "\n        ".join(out.strip().splitlines()[-4:]))
+
+
 print()
 if fails:
     print(f"FAIL — {len(fails)} check(s) failed")

@@ -192,15 +192,30 @@ def gate_completeness(root: Path, index: dict) -> list:
     def bad(path, msg):
         v.append(dict(gate="G8", path=str(path), message=msg))
 
-    fits = {i for i in index if "-fit-" in i}
-    verdicts = {i for i in index if "-verdict-" in i}
+    # The kind lives in ONE position of the id, cpt-{system}-{kind}-{slug}.
+    # A first version matched the substring "-fit-" anywhere, so a FINDING
+    # about a property called R_fit (id ...-finding-trend-cseries-r-fit-...)
+    # was taken for a FIT, found to have no VERDICT, and failed the gate 28
+    # times over. Found 2026-09-28, the first time machine-emitted findings
+    # went through the tree.
+    KIND = re.compile(r"^(cpt-[a-z0-9]+-)(fit|verdict)(-[a-z0-9-]+)$")
+
+    def kind_of(i):
+        m = KIND.match(i)
+        return m.group(2) if m else None
+
+    def swap(i, to):
+        return KIND.sub(lambda m: m.group(1) + to + m.group(3), i)
+
+    fits = {i for i in index if kind_of(i) == "fit"}
+    verdicts = {i for i in index if kind_of(i) == "verdict"}
     # a VERDICT names its FIT; the id differs only in the kind slug
     for f in sorted(fits):
-        if f.replace("-fit-", "-verdict-") not in verdicts:
+        if swap(f, "verdict") not in verdicts:
             bad(index[f]["path"], f"{f} has no VERDICT; a parameter without a "
                                   f"verdict is a number nobody can defend")
     for w in sorted(verdicts):
-        if w.replace("-verdict-", "-fit-") not in fits:
+        if swap(w, "fit") not in fits:
             bad(index[w]["path"], f"{w} refers to no FIT in this tree")
 
     led = root / LEDGER
