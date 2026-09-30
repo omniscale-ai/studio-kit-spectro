@@ -25,6 +25,13 @@ pattern = "Instrument"
 description = "Instrument, excitation amplitude/bias, measured range, points per decade, and the RANGE OVER WHICH THE INSTRUMENT IS TRUSTED. A range not stated is a range not checked."
 
 [[artifacts.DATASET.headings]]
+id = "ds-acquisition"
+level = 2
+required = true
+pattern = "Acquisition Order"
+description = "The order in which the independent variable was traversed, and whether once or both ways. A both-ways acquisition makes `direction` a MEASUREMENT axis; each direction is fitted and their disagreement reported. Datasets acquired in opposite orders are not comparable until this is stated."
+
+[[artifacts.DATASET.headings]]
 id = "ds-conditions"
 level = 2
 required = true
@@ -173,7 +180,7 @@ id = "cal-question"
 level = 2
 required = true
 pattern = "Question"
-description = "The threshold, constant or method choice this calibration licenses, and where it is used."
+description = "The threshold, constant or method choice this calibration licenses, and where it is used. Frontmatter `scope:` names the systems it is valid for (default: its own) and `basis: scored | inherited` says whether it was scored on this system or copied from another CALIBRATION, which it must then name. graph_gate G3 refuses a VERDICT citing a calibration scoped elsewhere; G4 refuses a supported FINDING resting on inherited thresholds."
 
 [[artifacts.CALIBRATION.headings]]
 id = "cal-scored"
@@ -295,6 +302,13 @@ level = 2
 required = true
 pattern = "Decisions Log"
 description = "Question, options with trade-offs, choice."
+
+[[artifacts.ANALYSIS-PLAN.headings]]
+id = "ap-criteria"
+level = 2
+required = false
+pattern = "Verdict Criteria"
+description = "Criteria every permitting VERDICT in this system must speak to, beyond the five every model fit has (identifiability, misfit, residual structure, noise, instrument range). One per row or bullet; graph_gate G1 requires each in every permitting VERDICT of the system. This is where a technique-specific requirement -- direction hysteresis, an independent corroboration -- becomes gated instead of free text."
 
 [[artifacts.ANALYSIS-PLAN.headings]]
 id = "ap-approval"

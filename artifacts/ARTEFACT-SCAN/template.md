@@ -20,7 +20,7 @@ date: {YYYY-MM-DD}
 
 | where | detected how | measurements affected | evidence |
 |---|---|---|---|
-| {band/point} | {test} | {n of N} | {what makes it impossible, not merely odd} |
+| {region of the independent variable — a frequency band, a 2θ range, a bias window — or a point} | {test} | {n of N} | {what makes it impossible, not merely odd} |
 
 {For each: state the evidence that the points are WRONG rather than extreme.
 A contaminated point that still looks physically plausible is the dangerous
@@ -37,6 +37,11 @@ up across the series.}
 Truncating also discards everything else in the removed range. Where the
 discarded region carries information the analysis needs, say what is lost and
 score the two strategies against a target neither is fitted to.}
+
+{If a detector was disabled or could not run — a periodic-pickup search whose
+base frequency lies below the grid's first point, say — record that here as
+its own row. "Not scanned for" and "scanned and clean" are different
+states, and only one of them is evidence.}
 
 ## Attestation
 

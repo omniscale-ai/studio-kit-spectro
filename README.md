@@ -33,12 +33,15 @@ ANALYSIS-PLAN gates all of it
   series rather than per measurement. Script-generated.
 - **FIT** — one model, one measurement: the equation, the weighting, the
   effective sample size, the parameters. Script-generated.
-- **VERDICT** — may this parameter be used? Five criteria, each with its
-  measured value, its threshold, and the calibration licensing that threshold.
-  Script-generated, never hand-edited.
+- **VERDICT** — may this parameter be used? Five criteria every model fit
+  has, plus whatever the ANALYSIS-PLAN declares for this system — each with
+  its measured value, its threshold, and the calibration licensing that
+  threshold. Script-generated, never hand-edited.
 - **CALIBRATION** — the ground-truth evidence licensing one threshold or
-  constant. Must name **the quantity it was scored on** and report **both**
-  error rates.
+  constant. Must name **the quantity it was scored on**, report **both**
+  error rates, and declare **which system it is valid for** — a threshold
+  borrowed from another system is recorded as `inherited`, licenses
+  provisional verdicts, and licenses no supported finding.
 - **FINDING** — a physical claim, with its confounds sized and its reproduction
   checked. `retracted` is a first-class status.
 
@@ -63,7 +66,7 @@ what to do next.
    sections, ID grammar `cpt-{system}-{dataset|scan|fit|verdict|calib|finding|aplan}-{slug}`.
 2. `scripts/` — computational gates. `emit_artifacts.py` *generates* FIT and
    VERDICT records from a pipeline's result table; `graph_gate.py` enforces
-   nine cross-artifact rules that static validation cannot express.
+   ten cross-artifact rules that static validation cannot express.
 3. `workflows/` — agent routes with hard rules (a parameter may never be
    reported without its verdict; a rate law may never be fitted across a
    synthesis axis).
@@ -91,7 +94,34 @@ Bringing your own fitter means **its thresholds are yours to calibrate** —
 with both error rates. And the calibrations shipped in `artifacts/*/examples/`
 are **evidence about ZnO impedance at one scale**; copying their numbers onto a
 different instrument or material is the precise failure the kit exists to stop.
-They are worked examples of the form, not defaults.
+They are worked examples of the form, not defaults — and since 2026-09-30 the
+gate enforces this: a CALIBRATION carries a `scope:`, a VERDICT may not cite
+one scoped to another system (G3), and a threshold you borrow anyway must be
+written down as `basis: inherited`, which licenses provisional verdicts and no
+`supported` finding (G4). The second field test did exactly this borrowing,
+correctly and in prose; the gate could not see it.
+
+## Nothing about the model is the kit's
+
+The kit was built on single-arc impedance spectra, and its first version
+carried that in places it should not have: the emitter's default parameter
+list was one circuit's, its identifiability row said "arc closed", and the
+verdict's required criteria were a fixed five with no way to add the one a
+both-ways sweep needs. Pointing it at a second technique (XRD) and a second
+impedance programme (MIS capacitors, kΩ scale, swept both ways) found each of
+these. They are now **declarations, not defaults**:
+
+| what varies between systems | where it is declared | what gates it |
+|---|---|---|
+| the parameters a fit yields | `emit_artifacts.py --params` (required) | — |
+| the identifiability test — a property of the *model* ("arc apex inside the window"; "peak and both half-maxima inside the scan") | `--identifiability-test`, printed in every VERDICT | G1 |
+| what the misfit statistic measures | `--misfit-label` | — |
+| criteria beyond the universal five | ANALYSIS-PLAN → `Verdict Criteria` | G1 requires each in every permitting VERDICT of the system |
+| which system a threshold is evidence about | CALIBRATION → `scope:`, `basis:` | G3 (scope), G4 (no supported claim on inherited) |
+| how the independent variable was traversed, once or both ways | DATASET → `Acquisition Order` | G10 |
+
+`tests/test_domain.py` exercises every row on a synthetic system the kit was
+not written for.
 
 ## Tests
 
@@ -108,6 +138,7 @@ Three layers, in increasing order of what they can catch:
 | `test_noise.py` | the routing itself: noisy → *imprecise*, mis-modelled → *biased*, unidentifiable → refused even when the fit is excellent |
 | `test_completeness.py` | a second emit from one DATASET erasing the first from the ledger G8 reads |
 | `test_axis_kind.py` | a `supported` claim fitted along an axis the DATASET declares SYNTHESIS |
+| `test_domain.py` | the kit on a system it was not written for: a plan-declared criterion is required (G1); a calibration from another system is refused (G3); a borrowed one licenses verdicts but no supported finding (G4); a DATASET states its acquisition order (G10); the emitter assumes no model |
 
 The last one needs synthetic data, and that is the point: the real dataset
 carries no label saying which measurements are genuinely noisy and which are
@@ -155,7 +186,7 @@ valid only for paths inside the project root.
 Everything here runs without Studio — Python 3.9+, **standard library only**:
 
 ```bash
-python3 scripts/graph_gate.py artifacts     # 8 cross-artifact gates
+python3 scripts/graph_gate.py artifacts     # 10 cross-artifact gates
 python3 scripts/check_claims.py             # example numbers vs their provenance
 ```
 
@@ -169,10 +200,11 @@ the boundary.
 
 The CALIBRATION and VERDICT layers are domain-neutral by construction — "score
 on the quantity you care about", "report both error rates" and "biased is not
-imprecise" have nothing to do with impedance. DATASET and ARTEFACT-SCAN still
-carry impedance-flavoured language in places, and adapting them to another
-technique is the obvious next test of how general the shape really is; see
-[USAGE.md](USAGE.md#5-adapting-to-your-domain).
+imprecise" have nothing to do with impedance. What a technique adds — its
+model's identifiability test, its own verdict criteria, its acquisition
+order — is declared per system rather than edited into the kit; see
+[USAGE.md](USAGE.md#5-adapting-to-your-domain). The shipped examples are ZnO
+impedance and are scoped to it.
 
 ## License
 

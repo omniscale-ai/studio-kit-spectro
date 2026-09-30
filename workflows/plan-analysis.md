@@ -24,12 +24,27 @@ description: Invoke when the user asks to analyse a new spectrum dataset, or bef
    - **Instrument** — the range over which the instrument is trusted, with the
      signal level at both extremes. If nobody knows it, that is the first thing
      to measure.
+   - **Acquisition Order** — which way the independent variable was
+     traversed, once or both ways. Two programmes were once compared as if
+     alike, one swept high→low and the other low→high→low, on films where the
+     two directions disagree by 6%. If both ways: `direction` is a
+     MEASUREMENT axis, and its disagreement is a verdict criterion (step 3b).
 
 3. **Check the geometry.** If measurements will be converted to material
    properties, is per-sample geometry recorded? Does any geometric factor
    correlate with a condition axis? Note the size of the correlation now: if it
    is comparable to the effect the user hopes to find, tell them before the work
    starts, not after.
+
+3b. **Declare what a verdict must answer for THIS system.** The five criteria
+   every model fit has are the floor. Write anything this technique or this
+   acquisition adds under the plan's Verdict Criteria — forward/reverse
+   disagreement, an independent corroboration, a crystallinity floor — and G1
+   will require it of every permitting VERDICT. Name the identifiability test
+   for the model being fitted in the Decisions Log; it is the model's, not the
+   kit's. Say which CALIBRATIONs exist for this system and which are to be
+   borrowed (`basis: inherited`) for a first look and re-scored before any
+   claim.
 
 4. **Brainstorm scope, depth, interventions and budget with the user.** Present
    options with trade-offs and record them in the Decisions Log. Include the

@@ -9,6 +9,7 @@ date: 2026-08-19
 <!-- toc -->
 
 - [Instrument](#instrument)
+- [Acquisition Order](#acquisition-order)
 - [Condition Axes](#condition-axes)
 - [Sample Geometry](#sample-geometry)
 - [Provenance](#provenance)
@@ -23,19 +24,22 @@ Gamry IFC1010, 20 mV rms, 0 V bias, 1.00 MHz → 9.97 Hz, 51 points. Gamry
 `cpt-zno-dataset-750pass`: unusable above ~100 kHz, and above ~30 MΩ sample
 impedance.
 
-**Sweep direction.** 1 MHz → 10 Hz, i.e. high to low, in every file. This is
-the orthodox direction when ionic transport is possible (Artem Grebenko,
-27 Sep 2026: if oxygen-vacancy drift can occur, sweep from high frequency
-down; a low→high sweep lets slow species respond before the fast ones are
-measured). Recorded here because the two directions can give different
-spectra on the same sample and a reader comparing to a low→high dataset — the
-ULK MIS set, for instance — needs to know.
-
 **Instrument input impedance.** A BioLogic/Gamry-class analyser has an input
 impedance of order 100 MΩ. Measuring an 80 MΩ sample against it is a divider
 with a comparable shunt, and the ~30 MΩ ceiling measured above is that
 limitation seen from the data side, not a property of the films. (Same
 source.)
+
+## Acquisition Order
+
+1 MHz → 10 Hz, high to low, once, in every file. This is the orthodox
+direction when ionic transport is possible (Artem Grebenko, 27 Sep 2026: if
+oxygen-vacancy drift can occur, sweep from high frequency down; a low→high
+sweep lets slow species respond before the fast ones are measured). No
+reverse branch was acquired, so direction dependence cannot be measured from
+this set. Stated because the two directions can give different spectra on the
+same sample and a reader comparing to a low→high→low dataset — the ULK MIS
+set, where the forward/reverse disagreement was a median 6% — needs to know.
 
 ## Condition Axes
 

@@ -29,3 +29,18 @@
    to find out why. Name the fork and the commit:
    `impedance 1.7.1+atlant.1 (fork of ECSHackWeek/impedance.py @ 6a269c4)`.
    G7 checks an Attestation exists; only you can make it true.
+
+9. **A calibration is evidence about the system it was scored on.** Its
+   frontmatter `scope:` names the systems it licenses (default: its own). A
+   VERDICT in another system may not cite it. Enforced by G3. Thresholds
+   scored on MΩ-scale spectra were once applied to kΩ-scale data on a
+   different instrument, and every gate passed, because a scored quantity and
+   two error rates had been *written* — the gate could not tell "scored here"
+   from "scored elsewhere".
+
+10. **Borrowing is recorded, and it licenses verdicts, not claims.** To use
+    another system's threshold on new data, write a CALIBRATION in the new
+    system with `basis: inherited` that names the source. Verdicts may cite it
+    and are provisional. A FINDING marked `supported` may not rest on them
+    (G4): re-score at the new scale first. The line is drawn at the claim
+    because that is where a borrowed number becomes somebody else's fact.

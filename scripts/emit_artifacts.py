@@ -18,10 +18,21 @@ Example (the ZnO/eis_suite case):
       --system zno --dataset cpt-zno-dataset-750pass \\
       --scan cpt-zno-scan-750pass --out artifacts \\
       --model 'Z = R_s + 1/(1/R_gb + Q (jw)^a)' \\
+      --params R_s,R_gb,Q,alpha,tau \\
+      --identifiability-test 'arc apex inside the window, -Z" falling on the low-f side' \\
+      --misfit-label 'Median relative deviation over arc-bearing points' \\
       --weighting-calib cpt-zno-calib-weight-floor \\
       --misfit-calib cpt-zno-calib-misfit-metric \\
       --residual-calib cpt-zno-calib-residual-structure \\
       --attest 'eis_suite @ 2026-08-19, python run_series.py 750pass'
+
+Nothing about the model is assumed. The identifiability test in particular is
+a property of the MODEL, not of fitting: "the arc closes inside the window" is
+the right test for a single-arc impedance model and meaningless for a
+diffraction peak, so it is declared per run and printed in the VERDICT rather
+than living in this file as a default. Earlier versions carried the ZnO
+circuit's parameter list and its "arc-bearing points" wording as defaults;
+those came out on 2026-09-30 when the kit was pointed at a second technique.
 
 Stdlib only. Exit 0 on success, 2 on usage error.
 """
@@ -42,7 +53,7 @@ DEFAULT_MAP = {
     "n_total": "n_total",
     "misfit": "misfit",
     "noise": "noise",
-    "closed": "arc_closed",
+    "identifiable": "identifiable",
     "resid_systematic": "resid_systematic",
     "resid_runs": "resid_runs",
     "resid_n": "resid_n",
@@ -50,8 +61,15 @@ DEFAULT_MAP = {
     "verdict": "use",
     "reasons": "reasons",
 }
-# free-form parameter columns are everything else the user names
-PARAM_DEFAULT = ["R_s", "R_gb", "Q", "alpha", "tau"]
+# Columns an older pipeline may still write for a field. `arc_closed` was the
+# identifiability column's name when the only model the kit had met was a
+# single arc; every existing result table uses it, so it stays readable.
+LEGACY_COLUMNS = {"identifiable": ["arc_closed"]}
+# The identifiability test when none is declared. Deliberately generic: it is
+# true of every model and specific to none, which is the point -- if a run
+# wants the VERDICT to say what was actually tested, it says so.
+IDENT_DEFAULT = "the feature that determines the parameter lies inside the measured range"
+MISFIT_LABEL_DEFAULT = "Misfit statistic"
 
 # These two patterns MUST stay identical to the pair in graph_gate.py, and the
 # composition below MUST stay `permissive and not refusing`. The kit has been
@@ -260,7 +278,7 @@ Licensed by `{a.weighting_calib}`.
 |---|---|---|---|
 {chr(10).join(rows)}
 
-Median relative deviation over arc-bearing points: **{pct(num(row, cmap['misfit']))}**.
+{a.misfit_label}: **{pct(num(row, cmap['misfit']))}**.
 {'A parameter resting on a bound is not determined by the data.' if bound else ''}
 
 ## Attestation
@@ -276,13 +294,15 @@ def verdict_doc(row, a, cmap) -> str:
     reasons = (row.get(cmap["reasons"]) or "").strip()
     permitted = bool(PERMISSIVE.search(call_raw)) and not REFUSING.search(call_raw)
     mis, noise = num(row, cmap["misfit"]), num(row, cmap["noise"])
-    closed = truthy(row, cmap["closed"])
+    identifiable = truthy(row, cmap["identifiable"])
     systematic = truthy(row, cmap["resid_systematic"])
     runs, rn = num(row, cmap["resid_runs"]), num(row, cmap["resid_n"])
 
-    resid_txt = (f"systematic ({int(runs)} run(s) over {int(rn)} arc points)"
+    resid_txt = (f"systematic ({int(runs)} run(s) over {int(rn)} points)"
                  if systematic and math.isfinite(runs)
                  else "random" if math.isfinite(runs) else "not assessed")
+    ident_txt = (f"test passed: {a.identifiability_test}" if identifiable
+                 else f"**test failed: {a.identifiability_test}**")
 
     # biased vs imprecise -- the distinction the rules require on a refusal
     if permitted:
@@ -316,7 +336,7 @@ date: {a.date}
 
 | criterion | measured | threshold | licensed by |
 |---|---|---|---|
-| identifiability | {'feature resolved inside the measured range' if closed else '**not resolved inside the measured range**'} | must resolve inside the window | `{a.identifiability_calib}` |
+| identifiability | {ident_txt} | the declared test must pass | `{a.identifiability_calib}` |
 | misfit | {pct(mis)} | < {pct(a.misfit_max)} | `{a.misfit_calib}` |
 | residual structure | {resid_txt} | {a.resid_rule} | `{a.residual_calib}` |
 | noise | {pct(noise)} | < {pct(a.noise_max)} | `{a.noise_calib}` |
@@ -348,7 +368,21 @@ def main() -> int:
     p.add_argument("--residual-calib", required=True)
     p.add_argument("--attest", required=True)
     p.add_argument("--date", default="")
-    p.add_argument("--params", default=",".join(PARAM_DEFAULT))
+    p.add_argument("--params", required=True,
+                   help="comma-separated CSV columns holding the fitted "
+                        "parameters, in the order the FIT should list them. "
+                        "Required: a default list would be one model's, and "
+                        "the kit assumes no model")
+    p.add_argument("--identifiability-test", default=IDENT_DEFAULT,
+                   help="the test behind the identifiability row, verbatim, "
+                        "as the VERDICT should print it. It belongs to the "
+                        "model: 'arc apex inside the window' for a single "
+                        "arc, 'peak maximum and both half-maxima inside the "
+                        "scan' for a diffraction line. The column it reads "
+                        "is --map identifiable=<col>")
+    p.add_argument("--misfit-label", default=MISFIT_LABEL_DEFAULT,
+                   help="what the misfit column measures, as the FIT should "
+                        "print it (default: %(default)r)")
     p.add_argument("--map", nargs="*", default=[],
                    help="artifact_field=csv_column overrides")
     p.add_argument("--misfit-max", type=float, default=0.15)
@@ -412,10 +446,28 @@ def main() -> int:
     params = [x.strip() for x in a.params.split(",") if x.strip()]
 
     with open(a.csv, newline="") as fh:
-        rows = [r for r in csv.DictReader(fh)
+        reader = csv.DictReader(fh)
+        header = list(reader.fieldnames or [])
+        rows = [r for r in reader
                 if (r.get("ok") or "True").strip().lower() in ("true", "1", "yes")]
     if not rows:
         print("no usable rows in the input table")
+        return 2
+
+    # a field whose default column is absent falls back to its legacy name
+    for field, olds in LEGACY_COLUMNS.items():
+        if cmap[field] not in header:
+            for old in olds:
+                if old in header:
+                    cmap[field] = old
+                    break
+    absent = [(f, c) for f, c in cmap.items()
+              if c not in header and f not in ("resid_runs", "resid_n")]
+    absent += [(f"param {x}", x) for x in params if x not in header]
+    if absent:
+        print("error: the table has no column for: "
+              + ", ".join(f"{f} ({c})" for f, c in absent)
+              + ". Name the column with --map field=column.", file=sys.stderr)
         return 2
 
     out = Path(a.out)

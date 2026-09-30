@@ -20,11 +20,12 @@ date: {YYYY-MM-DD}
 
 | criterion | measured | threshold | licensed by |
 |---|---|---|---|
-| identifiability | {did the feature that determines this parameter appear inside the measured range?} | {…} | `cpt-{system}-calib-{slug}` |
+| identifiability | {did the feature that determines this parameter appear inside the measured range? Name the test — it belongs to the model, e.g. "arc apex inside the window", "peak and both half-maxima inside the scan"} | {…} | `cpt-{system}-calib-{slug}` |
 | misfit | {…} | {…} | `cpt-{system}-calib-{slug}` |
 | residual structure | {random / systematic, with the statistic} | {…} | `cpt-{system}-calib-{slug}` |
 | noise | {…} | {…} | `cpt-{system}-calib-{slug}` |
 | instrument range | {is the signal inside the range the DATASET declares trusted?} | {…} | `cpt-{system}-calib-{slug}` |
+| {any criterion the ANALYSIS-PLAN declares under Verdict Criteria} | {…} | {…} | `cpt-{system}-calib-{slug}` |
 
 ## Call
 

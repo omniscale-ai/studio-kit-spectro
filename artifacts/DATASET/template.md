@@ -22,6 +22,20 @@ TRUSTED. State the signal level at the extremes of the measured range. A range
 you have not bounded is a range you have not checked, and the analysis will
 faithfully fit whatever the instrument returned outside it.}
 
+## Acquisition Order
+
+{The order in which the independent variable was traversed — frequency high→low
+or low→high, 2θ ascending, voltage −V→+V — and whether it was traversed once
+or both ways. If both ways, each direction is a separate measurement and
+`direction` is a MEASUREMENT axis in the table below; the analysis then fits
+each direction and reports their disagreement, rather than keeping one and
+discarding the other.
+
+State why it matters for this technique, or "not applicable" with the reason.
+Two datasets acquired in opposite orders are not comparable until this is
+known: a sample with a slow response gives different spectra in the two
+directions, and nothing in the spectra themselves says which was used.}
+
 ## Condition Axes
 
 {One row per axis. Declare each MEASUREMENT or SYNTHESIS.}

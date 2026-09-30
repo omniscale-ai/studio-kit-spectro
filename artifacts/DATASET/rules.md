@@ -16,3 +16,9 @@
    identified here rather than propagated into analysis as fact.
 5. **Format traps are recorded.** Decimal commas, unusual encodings and
    silently-truncating parsers belong here; the next person will hit them too.
+6. **The acquisition order is stated.** Which way the independent variable was
+   traversed, and whether once or both ways. A both-ways acquisition is two
+   measurements: declare `direction` as a MEASUREMENT axis, fit each, and
+   report their disagreement. Keeping one branch and dropping the other is a
+   selection the protocol was designed to prevent. Enforced by
+   `graph_gate.py` G10.

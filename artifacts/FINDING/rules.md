@@ -20,3 +20,8 @@
 7. **Retraction is a first-class status.** A retracted finding keeps its
    artifact, with the reason. Deleting it loses the reason someone will
    otherwise rediscover.
+8. **No supported claim on borrowed thresholds.** If any supporting verdict
+   was judged against a CALIBRATION marked `basis: inherited`, the finding
+   stays `proposed` until the threshold is re-scored on this system. Enforced
+   by G4. A first look at new data on another system's thresholds is fine;
+   a publication on them is the number nobody can defend.

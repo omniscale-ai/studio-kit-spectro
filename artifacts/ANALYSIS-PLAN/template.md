@@ -37,6 +37,20 @@ moves to make a result look better is no longer evidence.}
 | question | options and trade-offs | choice |
 |---|---|---|
 
+## Verdict Criteria
+
+{Optional. Criteria every permitting VERDICT in this system must speak to,
+BEYOND the five every model fit has (identifiability, misfit, residual
+structure, noise, instrument range). One per row; `graph_gate.py` G1 requires
+each in every permitting VERDICT of this system.
+
+This is where a technique's own requirement becomes gated instead of free
+text: forward/reverse disagreement for a both-ways sweep, an independent
+corroboration, a crystallinity floor. Each still needs a CALIBRATION.}
+
+| criterion | why this system needs it |
+|---|---|
+
 ## Approval
 
 {Who approved, when. Required for `status: approved`.}

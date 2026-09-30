@@ -13,6 +13,7 @@ date: 2026-08-19
 - [Allowed Interventions](#allowed-interventions)
 - [Deliverables](#deliverables)
 - [Decisions Log](#decisions-log)
+- [Verdict Criteria](#verdict-criteria)
 - [Approval](#approval)
 
 <!-- /toc -->
@@ -62,6 +63,19 @@ somewhere less visible); contacting the experimentalists.
 | KK validity | veto usability vs report as diagnostic | diagnostic; the veto rejected 41 accurate spectra and admitted inaccurate ones. Safe only because these samples were shown stationary |
 | arc count | fit two arcs where χ² improves vs refuse to count | refuse — all three DRT arms fail on two-arc synthetics at this corruption level, so "one arc" is not evidence of one arc |
 | what to do about high-resistance coupons | report with wide error bars vs refuse | refuse, and recommend 200 mV excitation — the limit is signal current, not analysis |
+
+## Verdict Criteria
+
+Nothing beyond the five. The identifiability test for this system's single-arc
+model is *arc apex inside the window with −Z″ falling on the low-frequency
+side*; it is a property of the model and is printed in every VERDICT, not
+assumed. Independent R_dc corroboration is reported where the two
+low-frequency points allow it but is not required, because it is unavailable
+on exactly the spectra where it would matter most (the open arcs).
+
+| criterion | why this system needs it |
+|---|---|
+| — | none beyond the floor; these sweeps were acquired one way, so no direction criterion applies |
 
 ## Approval
 

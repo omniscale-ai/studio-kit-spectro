@@ -1,6 +1,8 @@
 ---
 status: complete
 date: 2026-08-19
+scope: zno
+basis: scored
 ---
 
 # Calibration — which misfit statistic separates good fits from bad

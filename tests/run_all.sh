@@ -15,6 +15,15 @@
 #                      same regexes in opposite orders and a finding built on
 #                      refused verdicts passed the gate meant to stop it.
 #
+#   test_domain.py     the kit applied to a system it was not written for:
+#                      a plan-declared verdict criterion is required (G1), a
+#                      calibration from another system is refused (G3), a
+#                      borrowed one licenses verdicts but no supported
+#                      finding (G4), a DATASET must state its acquisition
+#                      order (G10), and the emitter carries no model of its
+#                      own (identifiability test and parameter list are
+#                      declared, not defaulted).
+#
 #   test_noise.py      feeds SYNTHETIC data whose truth is known by
 #                      construction and checks the routing: noisy -> imprecise,
 #                      mis-modelled -> biased, unidentifiable -> refused even
@@ -36,22 +45,25 @@ BEFORE=$(tree_sum)
 
 hr() { printf '\n\033[1m──────── %s ────────\033[0m\n' "$1"; }
 
-hr "1/6  end-to-end on real data"
+hr "1/7  end-to-end on real data"
 if bash tests/run_end_to_end.sh; then :; else fail=1; fi
 
-hr "2/6  verdict routing, output format, extra criteria"
+hr "2/7  verdict routing, output format, extra criteria"
 if $PY tests/test_routing.py; then :; else fail=1; fi
 
-hr "3/6  noise, bias and identifiability"
+hr "3/7  noise, bias and identifiability"
 if $PY tests/test_noise.py; then :; else fail=1; fi
 
-hr "4/6  completeness: the ledger sees every emit (G8)"
+hr "4/7  completeness: the ledger sees every emit (G8)"
 if $PY tests/test_completeness.py; then :; else fail=1; fi
 
-hr "5/6  axis kind: no supported trend along a synthesis axis (G9)"
+hr "5/7  axis kind: no supported trend along a synthesis axis (G9)"
 if $PY tests/test_axis_kind.py; then :; else fail=1; fi
 
-hr "6/6  the suite left the working tree untouched"
+hr "6/7  domain adaptation: declared criteria, calibration scope, acquisition order (G1/G3/G4/G10)"
+if $PY tests/test_domain.py; then :; else fail=1; fi
+
+hr "7/7  the suite left the working tree untouched"
 if [ "$(tree_sum)" = "$BEFORE" ]; then
   printf '  ok   no shipped artifact was modified\n'
 else

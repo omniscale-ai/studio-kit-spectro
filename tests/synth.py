@@ -96,7 +96,7 @@ def make_case(arm: str, noise_level: float, i: int) -> dict:
         label=f"{arm}-{noise_level:g}-{i:02d}",
         n_total=n_total, n_kept=n_kept,
         misfit=f"{misfit:.6f}", noise=f"{noise:.6f}",
-        arc_closed=str(closed), on_bound=str(on_bound),
+        identifiable=str(closed), on_bound=str(on_bound),
         resid_systematic=str(systematic),
         resid_runs=resid_runs, resid_n=resid_n,
         R_s=f"{r.uniform(0.01, 0.05):.5f}",
@@ -118,7 +118,7 @@ def decide(row) -> tuple[str, str]:
     """
     misfit = float(row["misfit"])
     noise = float(row["noise"])
-    closed = row["arc_closed"] == "True"
+    closed = row["identifiable"] == "True"
     on_bound = row["on_bound"] == "True"
     systematic = row["resid_systematic"] == "True"
 
@@ -136,7 +136,7 @@ def decide(row) -> tuple[str, str]:
 
 
 def write_table(path: Path, rows: list) -> Path:
-    cols = ["label", "n_total", "n_kept", "misfit", "noise", "arc_closed",
+    cols = ["label", "n_total", "n_kept", "misfit", "noise", "identifiable",
             "on_bound", "resid_systematic", "resid_runs", "resid_n",
             "R_s", "R_ct", "alpha", "use", "reasons", "ok", "truth"]
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -225,6 +225,12 @@ date: 2026-09-21
 Synthetic. 60 points per spectrum over a nominal 0.02 Hz – 20 kHz, one decade
 of arc either side of the apex. Trusted range: the whole window, because the
 generator defines it; there is no instrument to distrust.
+
+## Acquisition Order
+
+Not applicable: the generator emits every point at once, so there is no
+traversal and no direction. Stated rather than omitted because the gate cannot
+tell "no order" from "order not written down".
 
 ## Condition Axes
 
@@ -426,4 +432,22 @@ and nothing requiring it is claimed.
 Not reproduced in an independent set; this is a generated dataset and the
 question is whether the gate accepts the claim, not whether the claim is true.
 """, encoding="utf-8")
+    return p
+
+
+def declare_criteria(art: Path, criteria: dict) -> Path:
+    """Add a `## Verdict Criteria` section to the synthetic ANALYSIS-PLAN.
+
+    `criteria` maps criterion name -> reason. G1 then requires each name in
+    the Evidence of every permitting VERDICT of the system. This is the
+    mechanism by which a technique's own requirement -- forward/reverse
+    disagreement on a both-ways sweep, say -- is gated rather than described.
+    """
+    p = art / "ANALYSIS-PLAN" / "synth-ladder.md"
+    s = p.read_text(encoding="utf-8")
+    rows = "\n".join(f"| {k} | {v} |" for k, v in criteria.items())
+    block = ("## Verdict Criteria\n\n| criterion | why |\n|---|---|\n"
+             + rows + "\n\n## Approval")
+    assert s.count("## Approval") == 1
+    p.write_text(s.replace("## Approval", block, 1), encoding="utf-8")
     return p

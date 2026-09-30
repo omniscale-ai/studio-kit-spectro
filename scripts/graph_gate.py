@@ -6,9 +6,15 @@ express. Each gate exists because a real analysis went wrong in exactly that
 way; the docstring for each names the failure it prevents.
 
   G1  A VERDICT calling a parameter usable must cite evidence for every
-      criterion its rules define. Failure prevented: a fitted curve passing
-      through empty space graded "trustworthy" because the summary statistic
-      used was insensitive to the failure.
+      criterion its rules define: the five every model fit has
+      (identifiability, misfit, residual structure, noise, instrument range)
+      PLUS any the system's ANALYSIS-PLAN declares under `Verdict Criteria`.
+      Failure prevented: a fitted curve passing through empty space graded
+      "trustworthy" because the summary statistic used was insensitive to the
+      failure. The plan-declared part was added 2026-09-30 after a second
+      field test (MIS capacitors swept both ways) needed a direction-
+      hysteresis criterion and the only place to put it was free text, where
+      nothing gated it.
 
   G2  Every threshold cited in a VERDICT's Evidence must resolve to a
       CALIBRATION artifact. Failure prevented: constants that nobody can say
@@ -19,10 +25,25 @@ way; the docstring for each names the failure it prevents.
       found to fire on 35% of true negatives; and a constant tuned on one
       quantity while being relied on for another it was blind to.
 
+      Also, since 2026-09-30: a CALIBRATION is valid for the systems its
+      `scope:` names (default: its own), and a VERDICT may not cite one
+      scoped elsewhere; a CALIBRATION with `basis: inherited` must name the
+      calibration it was copied from. Failure prevented: thresholds scored on
+      MΩ-scale impedance spectra applied to a kΩ-scale dataset on a different
+      instrument, with G3 passing because a scored quantity and two rates
+      were *written* -- the gate could not tell "scored here" from "scored
+      elsewhere". The second field test had to say so in prose.
+
   G4  A FINDING may only rest on VERDICTs that permit the parameter it uses,
       and must fill Confounds Considered and Reproduction. Failure prevented:
       an "activation energy" fitted across a synthesis axis, on samples whose
       geometry was never divided out, that reversed sign in the replicate set.
+
+      Also: a FINDING marked `supported` may not rest on a VERDICT whose
+      thresholds come from an `inherited` CALIBRATION. Fitting and judging on
+      borrowed thresholds is allowed and is marked provisional; claiming on
+      them is not. The line is drawn at the claim because that is where a
+      borrowed number becomes somebody else's fact.
 
   G5  A DATASET must declare every condition axis as MEASUREMENT or SYNTHESIS.
       Failure prevented: the same, one step earlier.
@@ -55,6 +76,17 @@ way; the docstring for each names the failure it prevents.
       nothing made a FINDING *respect* the declaration, so the rule lived in
       FINDING/rules.md, in the template's confound table, and in G4's own
       docstring, and was enforced nowhere.
+
+  G10 A DATASET must state its Acquisition Order: the order in which the
+      independent variable was traversed, and whether once or both ways.
+      Failure prevented: two impedance programmes compared as if alike, one
+      swept high→low and the other low→high→low, on films where slow (ionic)
+      transport makes the two directions give different spectra -- median 6%
+      forward/reverse disagreement in the second set, and nothing in either
+      DATASET said which way it had been swept. The same field exists for a
+      diffractometer's scan direction, a voltage sweep's hysteresis and a
+      temperature ramp; it is a property of the *acquisition*, not of the
+      technique, which is why it is a required section and not a note.
 
 Usage:  python3 graph_gate.py <artifacts-root> [--json]
 Exit:   0 all gates pass, 1 violations found, 2 usage/parse error.
@@ -126,10 +158,74 @@ def verdict_permits(doc) -> bool:
     return bool(PERMISSIVE.search(call)) and not REFUSING.search(call)
 
 
-# criteria a verdict must speak to; see artifacts/VERDICT/rules.md
+# Criteria EVERY permitting verdict must speak to, whatever the technique; see
+# artifacts/VERDICT/rules.md. This is the floor. A system adds to it by
+# declaring criteria in its ANALYSIS-PLAN (`plan_criteria` below); it cannot
+# take from it, because these five are properties of fitting a model to data,
+# not of impedance.
 REQUIRED_EVIDENCE = ["identifiab", "misfit", "residual", "noise", "range"]
 BIAS_WORDS = re.compile(r"\b(biased|imprecise)\b", re.I)
-PLACEHOLDER = re.compile(r"\{[a-z_ |/-]+\}|TODO|TBD|FIXME", re.I)
+# A template placeholder is a short brace token, or a paragraph that OPENS with
+# a brace -- every template's guidance paragraph does, and a hurried user
+# leaves whole paragraphs, not tokens. No shipped artifact starts a line with
+# "{" (checked across four trees, 2026-09-30), so the second form is safe.
+PLACEHOLDER = re.compile(r"\{[a-z_ |/-]+\}|^\s*\{|TODO|TBD|FIXME", re.I | re.M)
+ID_SYSTEM = re.compile(r"^cpt-([a-z0-9]+)-")
+
+
+def system_of(artifact_id: str) -> str:
+    m = ID_SYSTEM.match(artifact_id or "")
+    return m.group(1) if m else ""
+
+
+def plan_criteria(index: dict) -> dict:
+    """{system: [criterion, ...]} declared under `## Verdict Criteria` in that
+    system's ANALYSIS-PLANs.
+
+    Each table row's first cell, or each bullet, is one criterion; it is
+    matched against a VERDICT's Evidence the way REQUIRED_EVIDENCE is, as a
+    lowercase substring. Plans of any status count, because a declaration can
+    only ADD to the floor: a draft plan can make the gate stricter, never
+    looser, so there is no bypass in honouring it.
+    """
+    out: dict = {}
+    for i, doc in index.items():
+        if doc["kind"] != "ANALYSIS-PLAN":
+            continue
+        sec = section(doc["text"], "Verdict Criteria")
+        if not sec.strip() or PLACEHOLDER.search(sec):
+            continue
+        for line in sec.splitlines():
+            s = line.strip()
+            if s.startswith("|"):
+                cells = [c.strip() for c in s.strip("|").split("|")]
+                if not cells or set(cells[0]) <= set("-: ") or \
+                        cells[0].lower() == "criterion":
+                    continue
+                name = cells[0]
+            elif s[:2] in ("- ", "* "):
+                name = s[2:].split("—")[0].split(" - ")[0]
+            else:
+                continue
+            name = name.strip("`* ").lower()
+            # a row like "| — | none beyond the floor |" declares nothing
+            if re.search(r"[a-z0-9]", name):
+                out.setdefault(system_of(i), []).append(name)
+    return out
+
+
+def calib_scope(doc, own_id: str) -> set:
+    """Systems a CALIBRATION is declared valid for.
+
+    Frontmatter `scope: zno, ulk` or `scope: any`. Absent means the
+    calibration's own system, which is what every calibration written before
+    this field existed meant.
+    """
+    raw = doc["fm"].get("scope", "").strip()
+    if not raw:
+        return {system_of(own_id)}
+    parts = {p.strip().strip("`").lower() for p in raw.split(",")}
+    return {p for p in parts if p}
 
 
 def frontmatter(text: str) -> dict:
@@ -253,9 +349,17 @@ def gate(docs: dict) -> tuple:
             index[i] = doc
 
     calib_ids = {i for i in index if "-calib-" in i}
+    declared = plan_criteria(index)
+    inherited = {i for i in calib_ids
+                 if index[i]["fm"].get("basis", "").strip().lower()
+                 == "inherited"}
+
+    def cited_calibs(verdict_doc) -> set:
+        return set(ids_in(section(verdict_doc["text"], "Evidence"), "calib"))
 
     for doc in docs.values():
         kind, text = doc["kind"], doc["text"]
+        me = own_id(doc) or ""
 
         # G7 -- generated kinds must be attested
         if kind in GENERATED:
@@ -276,6 +380,12 @@ def gate(docs: dict) -> tuple:
                 if missing:
                     bad(doc, "G1", "verdict permits use but Evidence is silent "
                                    f"on: {', '.join(missing)}")
+                extra = [c for c in declared.get(system_of(me), [])
+                         if c not in low]
+                if extra:
+                    bad(doc, "G1", "verdict permits use but Evidence is silent "
+                                   f"on a criterion this system's ANALYSIS-PLAN "
+                                   f"declares required: {', '.join(extra)}")
             cited = set(ids_in(ev, "calib"))
             if not cited:
                 bad(doc, "G2", "Evidence cites no CALIBRATION; every threshold "
@@ -284,6 +394,19 @@ def gate(docs: dict) -> tuple:
             for c in cited - calib_ids:
                 bad(doc, "G2", f"Evidence cites {c}, which resolves to no "
                                f"CALIBRATION artifact")
+            # G3 (scope) -- a threshold is evidence about the system it was
+            # scored on. Citing it from another system is copying a number.
+            for c in sorted(cited & calib_ids):
+                scope = calib_scope(index[c], c)
+                if "any" not in scope and system_of(me) not in scope:
+                    bad(doc, "G3", f"cites {c}, scored on system "
+                                   f"'{system_of(c)}' and not declared valid "
+                                   f"for '{system_of(me)}'. A threshold is "
+                                   f"evidence about the data it was scored on; "
+                                   f"re-score it here, or write a CALIBRATION "
+                                   f"in this system with `basis: inherited` "
+                                   f"naming the source, so the borrowing is a "
+                                   f"record and not a habit")
             if not permits and not BIAS_WORDS.search(call):
                 bad(doc, "G1", "verdict refuses a parameter without saying "
                                "whether it is biased (wrong model) or "
@@ -305,6 +428,17 @@ def gate(docs: dict) -> tuple:
                                "detection alone is not a calibration, since a "
                                "rule that fires on everything detects "
                                "everything")
+            basis = doc["fm"].get("basis", "scored").strip().lower()
+            if basis not in ("scored", "inherited"):
+                bad(doc, "G3", f"basis: {basis!r} is neither 'scored' nor "
+                               f"'inherited'")
+            elif basis == "inherited":
+                sources = [c for c in ids_in(text, "calib") if c != me]
+                if not sources:
+                    bad(doc, "G3", "basis: inherited, but the artifact names "
+                                   "no source CALIBRATION; a borrowed "
+                                   "threshold must say where it was borrowed "
+                                   "from")
 
         # G4 -- findings rest on permitting verdicts
         if kind == "FINDING":
@@ -324,6 +458,16 @@ def gate(docs: dict) -> tuple:
                 if refused:
                     bad(doc, "G4", "status: supported, but rests on refusing "
                                    f"verdicts: {', '.join(sorted(refused))}")
+                borrowed = sorted({c for i in vids & set(index)
+                                   for c in cited_calibs(index[i]) & inherited})
+                if borrowed:
+                    bad(doc, "G4", "status: supported, but its verdicts were "
+                                   "judged against thresholds inherited from "
+                                   "another system, not scored on this one: "
+                                   f"{', '.join(borrowed)}. Provisional "
+                                   "verdicts may be issued on borrowed "
+                                   "thresholds; a claim may not. Re-score, or "
+                                   "mark the finding proposed")
             for name, sec in (("Confounds Considered", conf),
                               ("Reproduction", rep)):
                 if not sec.strip() or PLACEHOLDER.search(sec):
@@ -383,6 +527,15 @@ def gate(docs: dict) -> tuple:
                         bad(doc, "G5", "condition axis row declares neither "
                                        f"MEASUREMENT nor SYNTHESIS: "
                                        f"{r.strip()[:70]}")
+            # G10 -- how the independent variable was traversed
+            acq = section(text, "Acquisition Order")
+            if not acq.strip() or PLACEHOLDER.search(acq):
+                bad(doc, "G10", "Acquisition Order is empty; state the order "
+                                "in which the independent variable was "
+                                "traversed and whether once or both ways, or "
+                                "'not applicable' with the reason. Two "
+                                "datasets swept in opposite directions are "
+                                "not comparable until this is known")
 
         # G6 -- plan approval
         if kind == "ANALYSIS-PLAN" and doc["fm"].get("status") == "approved":

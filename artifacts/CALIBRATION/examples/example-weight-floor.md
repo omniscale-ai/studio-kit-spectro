@@ -1,6 +1,8 @@
 ---
 status: complete
 date: 2026-08-19
+scope: zno
+basis: scored
 ---
 
 # Calibration — absolute weight floor `abs_frac`

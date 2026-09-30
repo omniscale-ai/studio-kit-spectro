@@ -58,9 +58,12 @@ Other things worth breaking, to see what the gates are for:
 | delete one dataset's FIT and VERDICT files | G8 | the tree lacks artifacts `emitted.json` says were written |
 | point a VERDICT's Evidence at a calibration that does not exist | G2 | unresolved threshold licence |
 | mark a finding `supported` whose Claimed Axis is a SYNTHESIS row | G9 | every value of that axis is a different sample, so the trend is a synthesis contrast |
-| omit a criterion from a permitting VERDICT's Evidence | G1 | a verdict must speak to all five |
+| omit a criterion from a permitting VERDICT's Evidence | G1 | a verdict must speak to all five, and to every one the plan declares |
 | state a detection rate with no false-positive rate | G3 | a rule that fires on everything detects everything |
 | mark an ANALYSIS-PLAN `approved` with an empty Approval | G6 | approval must name who and when |
+| cite a CALIBRATION whose `scope:` is another system | G3 | a threshold is evidence about the data it was scored on |
+| mark a finding `supported` on verdicts judged against a `basis: inherited` calibration | G4 | borrowed thresholds license verdicts, not claims |
+| delete a DATASET's Acquisition Order | G10 | datasets swept in opposite directions are not comparable until this is stated |
 
 ## 3. Generate FIT and VERDICT artifacts from your own pipeline
 
@@ -80,8 +83,14 @@ python3 scripts/emit_artifacts.py results.csv \
     --residual-calib  cpt-mysys-calib-residual \
     --attest 'mypipeline v1.2, python run.py run1' \
     --params R_s,R_p,Q,alpha \
-    --map verdict=usability reasons=why
+    --identifiability-test 'arc apex inside the window' \
+    --misfit-label 'median relative deviation over the arc' \
+    --map verdict=usability reasons=why identifiable=apex_in_window
 ```
+
+`--params` and `--identifiability-test` are the two places a model enters the
+record, and both are yours: the kit ships no parameter list and no test.
+
 
 **Per-criterion calibrations.** By default the identifiability and
 instrument-range rows cite `--misfit-calib` and `--weighting-calib`. If a
@@ -157,28 +166,52 @@ kit's own worked example.
 
 ## 5. Adapting to your domain
 
-The kit is not impedance-specific. To adapt it:
+The kit assumes a model is fitted to measured data and a parameter is wanted.
+It assumes no model and no technique. Everything a technique adds is
+**declared** — per run, per plan, per calibration — and gated; nothing is
+edited into the scripts.
 
-- **DATASET** — replace the impedance-flavoured trusted-range discussion with
-  your instrument's. The requirement is that a range exists and is stated.
-- **VERDICT** — the five criteria (identifiability, misfit, residual structure,
-  noise, instrument range) are general to model fitting. Edit
-  `artifacts/VERDICT/rules.md` records what the five mean for your domain.
-  **If you need a sixth, declare it with `--extra-criterion`** — the five are a
-  minimum, not a maximum, and a declared row is cited like any other and so is
-  gated by G2:
+| what your system has | declare it | gate |
+|---|---|---|
+| its own fitted parameters | `emit_artifacts.py --params a,b,c` (required; there is no default list) | — |
+| its own identifiability test — this belongs to the **model**: "arc apex inside the window" for a single arc, "peak maximum and both half-maxima inside the scan" for a diffraction line | `--identifiability-test '…'`, printed verbatim in every VERDICT; the column it reads is `--map identifiable=<col>` (`arc_closed` still read for old tables) | G1 |
+| its own misfit statistic | `--misfit-label '…'` | — |
+| criteria beyond the universal five | the ANALYSIS-PLAN's `## Verdict Criteria` table, one per row; emit the row with `--extra-criterion 'LABEL\|VALUE\|THRESHOLD\|CALIB-ID'` | G1 requires each row in every permitting VERDICT of the system; G2 requires its calibration to resolve |
+| thresholds scored on THIS data | a CALIBRATION with `scope: <system>` and `basis: scored` | G3: a VERDICT may not cite a calibration scoped elsewhere |
+| thresholds borrowed for a first look | a CALIBRATION in your system with `basis: inherited` naming the source | G3 requires the source; G4 refuses a `supported` FINDING resting on it |
+| an acquisition order — which way, once or both ways | DATASET `## Acquisition Order`; if both ways, `direction` is a MEASUREMENT axis and one FIT per direction | G10 |
 
-  ```bash
-      --extra-criterion 'crystallinity|cryst_frac|> 3x background|cpt-mysys-calib-cryst'
-  ```
+A worked case, from the second field test. MIS capacitors swept
+100 Hz → 5 MHz → 100 Hz, judged on thresholds scored on ZnO spectra swept the
+other way at a thousand times the impedance:
 
-  The second field is a CSV column name if one matches, else literal text.
-  (Earlier versions of this file said to edit `rules.md` and that
-  `graph_gate.py` would read the list from it. It does not: `rules.md` is in
-  the gate's `SKIP` set and `REQUIRED_EVIDENCE` is a hard-coded minimum, so
-  editing `rules.md` changed nothing and domain criteria ended up in free-text
-  `reasons` — thresholds with no calibration, which carrying rule 2 forbids.)
-- **CALIBRATION** — unchanged. "Score on the quantity you care about, report
-  both error rates, score the rule you deploy" is domain-independent.
-- **FINDING** — the confound table's rows (geometry, axis kind, instrument
-  range, selection) are a starting set; add your domain's.
+```bash
+# the plan declares what this system's verdicts must answer
+## Verdict Criteria
+| criterion | why |
+|---|---|
+| direction hysteresis | swept both ways; the branches must agree before either is a measurement |
+
+# the borrowed thresholds are written down as borrowed
+---
+scope: ulk
+basis: inherited
+---
+… inherited from `cpt-zno-calib-misfit-metric`; not re-scored at kΩ scale …
+
+# the emit declares the model's test and the extra criterion
+python3 scripts/emit_artifacts.py results.csv --system ulk … \
+    --params R_s,R_p,Q,alpha \
+    --identifiability-test 'single-arc model: arc apex inside the window' \
+    --extra-criterion 'direction hysteresis|hyst_med|< 5%|cpt-ulk-calib-hysteresis'
+```
+
+The tree then passes with 141 provisional verdicts and **cannot** carry a
+`supported` finding until the three calibrations are re-scored at ULK scale —
+which is the correct state for that data, and the state the first version of
+this kit could not express.
+
+The five criteria themselves (identifiability, misfit, residual structure,
+noise, instrument range) are not adjustable downward. They are properties of
+fitting a model to data, not of any technique; a system that believes it does
+not need one of them should write the row and say why the threshold is trivial.

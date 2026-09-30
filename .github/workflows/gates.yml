@@ -98,3 +98,15 @@ jobs:
       # nothing made a FINDING respect it until G9.
       - name: No supported trend along a synthesis axis
         run: python3 tests/test_axis_kind.py
+
+  domain-adaptation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The kit pointed at a system it was not written for. A verdict
+      # criterion declared in the plan is required of every permitting
+      # verdict; a calibration from another system cannot be cited; a
+      # borrowed one licenses verdicts but no supported finding; a DATASET
+      # states its acquisition order; the emitter assumes no model.
+      - name: Declared criteria, calibration scope, acquisition order
+        run: python3 tests/test_domain.py

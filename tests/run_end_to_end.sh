@@ -39,6 +39,9 @@ $PY scripts/emit_artifacts.py tests/provenance/results_750pass.csv \
     --system zno --dataset cpt-zno-dataset-750pass \
     --scan cpt-zno-scan-750pass --out "$OUT/artifacts" \
     --model 'Z(w) = R_s + 1/(1/R_gb + Q (jw)^alpha)' \
+    --params R_s,R_gb,Q,alpha,tau \
+    --identifiability-test 'arc apex inside the window, -Z" falling on the low-frequency side' \
+    --misfit-label 'Median relative deviation over arc-bearing points' \
     --weighting 'sigma_i = sqrt((0.02|Z_i|)^2 + (0.002 p90|Z|)^2)' \
     --weighting-calib cpt-zno-calib-weight-floor \
     --misfit-calib cpt-zno-calib-misfit-metric \
@@ -105,7 +108,7 @@ $PY scripts/graph_gate.py "$OUT/artifacts" >/dev/null 2>&1 \
 # so every other gate passes on it.
 G8DIR="$OUT/g8"
 mkdir -p "$G8DIR"
-EMIT_ARGS="--system t --model Z \
+EMIT_ARGS="--system t --model Z --params R_s,R_gb \
   --weighting-calib cpt-t-calib-w --misfit-calib cpt-t-calib-m \
   --residual-calib cpt-t-calib-r --attest test"
 $PY scripts/emit_artifacts.py tests/provenance/results_cseries.csv \
