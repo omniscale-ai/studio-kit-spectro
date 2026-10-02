@@ -73,5 +73,5 @@ that includes this statistic — see `cpt-zno-calib-residual-structure`.
 ## Attestation
 
 `eis_suite.fit.misfit` (definition), `bench_synth.py` (rates),
-eis_suite @ 2026-08-19 on impedance 1.7.1+atlant.1
+eis_suite @ 2026-08-19 on impedance 1.7.1+eis.1
 (fork of ECSHackWeek/impedance.py @ 6a269c4).

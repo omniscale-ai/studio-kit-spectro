@@ -27,7 +27,7 @@
    nothing said so, and anyone re-deriving these numbers from
    `pip install impedance==1.7.1` would have got different answers with no way
    to find out why. Name the fork and the commit:
-   `impedance 1.7.1+atlant.1 (fork of ECSHackWeek/impedance.py @ 6a269c4)`.
+   `impedance 1.7.1+eis.1 (fork of ECSHackWeek/impedance.py @ 6a269c4)`.
    G7 checks an Attestation exists; only you can make it true.
 
 9. **A calibration is evidence about the system it was scored on.** Its

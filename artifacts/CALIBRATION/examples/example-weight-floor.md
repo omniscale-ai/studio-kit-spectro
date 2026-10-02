@@ -41,7 +41,7 @@ for quantity B will be defensible on its own terms and wrong in use.
 ## Ground Truth
 
 117 synthetic spectra from `bench_synth.py`: single depressed arcs plus
-two-arc and Cole–Cole-distributed cases, at the ATLANT scale (MΩ arcs,
+two-arc and Cole–Cole-distributed cases, at the ZnO-film scale (MΩ arcs,
 1 MHz–10 Hz, 51 points), with this lab's corruptions injected — 50 Hz mains,
 high-frequency instrument garbage, low-frequency noise growth, window
 truncation. Parameter grid and seeds chosen away from `impedance.py`'s own test
@@ -85,6 +85,6 @@ bound (a false claim of determination) occur in 4 of 117 cases; at 0.0 the
 
 ## Attestation
 
-`exp_floor_calibration.py`, eis_suite @ 2026-08-19 on impedance 1.7.1+atlant.1
+`exp_floor_calibration.py`, eis_suite @ 2026-08-19 on impedance 1.7.1+eis.1
 (fork of ECSHackWeek/impedance.py @ 6a269c4), seeds from
 `bench_synth.build_cases()` (deterministic, 0–2 per grid point).

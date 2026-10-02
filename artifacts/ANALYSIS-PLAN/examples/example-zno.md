@@ -79,5 +79,5 @@ on exactly the spectra where it would matter most (the open arcs).
 
 ## Approval
 
-Approved by the ARIA/ATLANT-3D analysis owner, 19 August 2026, on the basis
+Approved by the analysis owner, 19 August 2026, on the basis
 that refusals are as valuable an output as numbers for this dataset.

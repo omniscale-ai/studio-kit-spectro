@@ -50,5 +50,5 @@ better signal.
 ## Attestation
 
 `eis_suite.verdict.usability` via `eis_suite.pipeline.analyze_spectrum`,
-eis_suite @ 2026-08-19 on impedance 1.7.1+atlant.1
+eis_suite @ 2026-08-19 on impedance 1.7.1+eis.1
 (fork of ECSHackWeek/impedance.py @ 6a269c4), `python run_series.py cseries`. Not hand-edited.

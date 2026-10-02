@@ -78,6 +78,6 @@ times worse.
 
 ## Attestation
 
-`exp_resid_validation.py`, eis_suite @ 2026-08-19 on impedance 1.7.1+atlant.1
+`exp_resid_validation.py`, eis_suite @ 2026-08-19 on impedance 1.7.1+eis.1
 (fork of ECSHackWeek/impedance.py @ 6a269c4), deterministic seeds from
 `bench_synth.build_cases()`.
