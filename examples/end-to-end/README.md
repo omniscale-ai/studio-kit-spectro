@@ -74,6 +74,9 @@ python3 scripts/emit_artifacts.py tests/provenance/results_750pass.csv \
     --scan    cpt-zno-scan-750pass \
     --out artifacts \
     --model 'Z(w) = R_s + 1/(1/R_gb + Q (jw)^alpha)' \
+    --params R_s,R_gb,Q,alpha,tau \
+    --identifiability-test 'arc apex inside the window, -Z" falling on the low-frequency side' \
+    --misfit-label 'Median relative deviation over arc-bearing points' \
     --weighting 'sigma_i = sqrt((0.02|Z_i|)^2 + (0.002 p90|Z|)^2)' \
     --weighting-calib cpt-zno-calib-weight-floor \
     --misfit-calib    cpt-zno-calib-misfit-metric \
@@ -82,12 +85,14 @@ python3 scripts/emit_artifacts.py tests/provenance/results_750pass.csv \
 ```
 
 These are generated, never hand-written: a verdict edited by the person who
-wants the parameter is not evidence.
+wants the parameter is not evidence. Note what the command declares and the
+kit does not know: the parameter list and the identifiability test are the
+single-arc model's, passed in, and printed in every VERDICT.
 
 ### 4. Gate
 
 ```bash
-python3 scripts/graph_gate.py artifacts     # 7 cross-artifact rules
+python3 scripts/graph_gate.py artifacts     # 10 cross-artifact rules
 python3 scripts/check_claims.py             # quoted numbers vs provenance
 cfs validate                                # structure, ID grammar, TOC
 ```

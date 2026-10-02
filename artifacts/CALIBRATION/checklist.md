@@ -10,5 +10,5 @@
 - [ ] Is the sweep actually informative, or flat across candidates?
 - [ ] Can someone re-run this from the Attestation, seeds included?
 - [ ] Was it scored on THIS system, at this scale, on this instrument? If not,
-      is `basis: inherited` set and the source named — and is everyone aware
+      is `basis: inherited` set and `inherited_from:` naming the source — and is everyone aware
       that no finding may be marked supported on it?

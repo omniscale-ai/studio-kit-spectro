@@ -46,7 +46,8 @@ it. A constant that moves because a result looked wrong is no longer evidence.
 
 7b. **If you are borrowing instead of scoring** — a first look at new data on
    another system's threshold — write the CALIBRATION in the new system with
-   `basis: inherited`, name the source calibration, and state the scale and
+   `basis: inherited` and `inherited_from: <source id>` in the frontmatter, and
+   state the scale and
    instrument it was scored on versus this one. G3 accepts it; G4 will refuse
    any `supported` finding that rests on it, which is the reminder to come
    back and do steps 1–6 here.

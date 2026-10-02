@@ -203,20 +203,35 @@ with tempfile.TemporaryDirectory() as td:
     art, ids = good_tree(Path(td))
     set_frontmatter(art / "CALIBRATION" / "synth-misfit.md", basis="inherited")
     rc, out = gate(art)
-    check(rc != 0 and gate_hits(out, "G3", "no source"),
+    check(rc != 0 and gate_hits(out, "G3", "inherited_from"),
           "basis: inherited without naming the source -> FAIL (G3)")
 
 with tempfile.TemporaryDirectory() as td:
+    # a body mention is not a provenance record: a calibration that
+    # cross-references its siblings in ordinary prose must still FAIL
     art, ids = good_tree(Path(td))
     cal = art / "CALIBRATION" / "synth-misfit.md"
     set_frontmatter(cal, basis="inherited")
     cal.write_text(cal.read_text(encoding="utf-8").replace(
         "## Ground Truth\n",
-        "## Ground Truth\n\nInherited from `cpt-zno-calib-misfit-metric`, "
-        "scored on MΩ-scale ZnO spectra; not re-scored at this scale.\n"),
+        f"## Ground Truth\n\nSee also `{synth.CALIBS['weight']}` and "
+        f"`{synth.CALIBS['noise']}`, which share the generator.\n"),
         encoding="utf-8")
     rc, out = gate(art)
-    check(rc == 0, "inherited with the source named, verdicts only -> PASS")
+    check(rc != 0 and gate_hits(out, "G3", "inherited_from"),
+          "basis: inherited citing siblings in the body only -> FAIL (G3)")
+
+with tempfile.TemporaryDirectory() as td:
+    art, ids = good_tree(Path(td))
+    cal = art / "CALIBRATION" / "synth-misfit.md"
+    # the source need not resolve in this tree: it lives in another project
+    set_frontmatter(cal, basis="inherited",
+                    inherited_from="cpt-zno-calib-misfit-metric")
+    rc, out = gate(art)
+    check(rc == 0, "inherited_from: in frontmatter, verdicts only -> PASS")
+    # own_id must not be fooled by the source id now sitting ABOVE **ID**
+    check("[G2]" not in out,
+          "the inherited calibration is still identified by its own ID line")
 
     synth.write_finding(art, "claim", "supported", ids,
                         "R_ct is 0.9 +/- 0.1 across the set", axis="none")
@@ -262,6 +277,27 @@ with tempfile.TemporaryDirectory() as td:
     rc, out = gate(art)
     check(rc != 0 and gate_hits(out, "G10"),
           "Acquisition Order left as the template's guidance text -> FAIL (G10)")
+
+with tempfile.TemporaryDirectory() as td:
+    # prose that wraps so a set literal lands at a line start is not a
+    # template placeholder. A tester lost a FAIL to this on 2026-10-01.
+    art, ids = good_tree(Path(td))
+    cal = art / "CALIBRATION" / "synth-misfit.md"
+    cal.write_text(cal.read_text(encoding="utf-8").replace(
+        "## Scored Quantity\n",
+        "## Scored Quantity\n\nScored on recovery of each quantity in\n"
+        "{R_s, absolute R_ct, R_ct fold change}, against known truth, for\n"
+        "every arm.\n"), encoding="utf-8")
+    rc, out = gate(art)
+    check(rc == 0, "a wrapped {…} set literal in prose is not a placeholder")
+    # ...while the template's own guidance paragraph still is
+    cal.write_text(cal.read_text(encoding="utf-8").replace(
+        "## Scored Quantity\n",
+        "## Scored Quantity\n\n{THE quantity the choice was scored on — and "
+        "the quantities\nit was NOT scored on.}\n"), encoding="utf-8")
+    rc, out = gate(art)
+    check(rc != 0 and gate_hits(out, "G3", "scored quantity"),
+          "a guidance paragraph opening with { is still a placeholder")
 
 # --------------------------------------------------------------------------
 print("\n=== 5. the emitter assumes no model ===")

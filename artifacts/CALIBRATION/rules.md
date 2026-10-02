@@ -40,7 +40,9 @@
 
 10. **Borrowing is recorded, and it licenses verdicts, not claims.** To use
     another system's threshold on new data, write a CALIBRATION in the new
-    system with `basis: inherited` that names the source. Verdicts may cite it
+    system with `basis: inherited` and `inherited_from: <source id>` in the
+    frontmatter (a mention in the body is not a provenance record; the source
+    need not exist in this tree). Verdicts may cite it
     and are provisional. A FINDING marked `supported` may not rest on them
     (G4): re-score at the new scale first. The line is drawn at the claim
     because that is where a borrowed number becomes somebody else's fact.

@@ -151,7 +151,7 @@ id = "vd-evidence"
 level = 2
 required = true
 pattern = "Evidence"
-description = "One row per criterion: identifiability, misfit, residual structure, noise tier, instrument range. Each with its measured value, its threshold, and the CALIBRATION licensing that threshold."
+description = "One row per criterion: identifiability, misfit, residual structure, noise, instrument range -- plus every criterion the system's ANALYSIS-PLAN declares under Verdict Criteria. Each with its measured value, its threshold, and the CALIBRATION licensing that threshold."
 
 [[artifacts.VERDICT.headings]]
 id = "vd-call"
@@ -180,7 +180,7 @@ id = "cal-question"
 level = 2
 required = true
 pattern = "Question"
-description = "The threshold, constant or method choice this calibration licenses, and where it is used. Frontmatter `scope:` names the systems it is valid for (default: its own) and `basis: scored | inherited` says whether it was scored on this system or copied from another CALIBRATION, which it must then name. graph_gate G3 refuses a VERDICT citing a calibration scoped elsewhere; G4 refuses a supported FINDING resting on inherited thresholds."
+description = "The threshold, constant or method choice this calibration licenses, and where it is used. Frontmatter `scope:` names the systems it is valid for (default: its own) and `basis: scored | inherited` says whether it was scored on this system or copied from another CALIBRATION, which it must then name in `inherited_from:`. graph_gate G3 refuses a VERDICT citing a calibration scoped elsewhere; G4 refuses a supported FINDING resting on inherited thresholds."
 
 [[artifacts.CALIBRATION.headings]]
 id = "cal-scored"

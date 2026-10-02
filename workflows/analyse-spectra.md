@@ -49,7 +49,8 @@ that need to be in the plan; an unlisted one sends you back for an amendment.
 4b. **Every threshold you judge against was scored on THIS system, or is
    declared borrowed.** A calibration from another system may not be cited
    (G3). To look at new data on another system's thresholds, write a
-   CALIBRATION here with `basis: inherited` naming the source; the verdicts
+   CALIBRATION here with `basis: inherited` and `inherited_from:` naming the
+   source; the verdicts
    are then provisional and no finding may be marked supported on them (G4).
    Re-score at this scale before claiming anything.
 

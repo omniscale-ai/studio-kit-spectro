@@ -9,6 +9,7 @@ date: 2026-08-19
 <!-- toc -->
 
 - [Claim](#claim)
+- [Claimed Axis](#claimed-axis)
 - [Supporting Verdicts](#supporting-verdicts)
 - [Confounds Considered](#confounds-considered)
 - [Reproduction](#reproduction)

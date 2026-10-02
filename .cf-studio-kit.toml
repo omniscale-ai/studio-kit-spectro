@@ -5,7 +5,7 @@ manifest_version = "1.0"
 [[kits]]
 slug = "studio-kit-spectro"
 name = "studio-kit-spectro"
-version = "0.1.0"
+version = "0.2.0"
 
 [[kits.resources]]
 id = "dataset_template"

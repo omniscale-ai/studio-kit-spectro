@@ -165,11 +165,16 @@ def verdict_permits(doc) -> bool:
 # not of impedance.
 REQUIRED_EVIDENCE = ["identifiab", "misfit", "residual", "noise", "range"]
 BIAS_WORDS = re.compile(r"\b(biased|imprecise)\b", re.I)
-# A template placeholder is a short brace token, or a paragraph that OPENS with
-# a brace -- every template's guidance paragraph does, and a hurried user
-# leaves whole paragraphs, not tokens. No shipped artifact starts a line with
-# "{" (checked across four trees, 2026-09-30), so the second form is safe.
-PLACEHOLDER = re.compile(r"\{[a-z_ |/-]+\}|^\s*\{|TODO|TBD|FIXME", re.I | re.M)
+# A template placeholder is a short brace token, or a PARAGRAPH that opens
+# with a brace -- every template's guidance paragraph does, and a hurried user
+# leaves whole paragraphs, not tokens. The first version of this matched a
+# brace at the start of any LINE, and a tester's prose that wrapped so a set
+# literal "{R_s, absolute R_pol, R_pol fold change}" landed at a line start
+# failed the gate (2026-10-01). Guidance always starts a paragraph; wrapped
+# prose never does. Checked: 35/35 template sections still caught, 0 false
+# positives on the shipped examples.
+PLACEHOLDER = re.compile(
+    r"\{[a-z_ |/-]+\}|(?:\A|\n[ \t]*\n)[ \t]*\{|TODO|TBD|FIXME", re.I)
 ID_SYSTEM = re.compile(r"^cpt-([a-z0-9]+)-")
 
 
@@ -268,7 +273,17 @@ def own_id(doc) -> str | None:
     kind_slug = {"DATASET": "dataset", "ARTEFACT-SCAN": "scan", "FIT": "fit",
                  "VERDICT": "verdict", "CALIBRATION": "calib",
                  "FINDING": "finding", "ANALYSIS-PLAN": "aplan"}[doc["kind"]]
-    found = ids_in(doc["text"], kind_slug)
+    # The `**ID**:` line is the declaration; fall back to the first id of the
+    # right kind in the BODY. A first version took the first id of the right
+    # kind anywhere in the file, and the moment a CALIBRATION's frontmatter
+    # gained `inherited_from: cpt-zno-calib-...` every inherited calibration
+    # was identified as its source and 181 verdicts failed G2 (2026-10-02).
+    m = re.search(rf"^\*\*ID\*\*:\s*`(cpt-[a-z0-9]+-{kind_slug}-[a-z0-9-]+)`",
+                  doc["text"], re.M)
+    if m:
+        return m.group(1)
+    body = re.sub(r"^---\n.*?\n---\n", "", doc["text"], count=1, flags=re.S)
+    found = ids_in(body, kind_slug)
     return found[0] if found else None
 
 
@@ -433,12 +448,19 @@ def gate(docs: dict) -> tuple:
                 bad(doc, "G3", f"basis: {basis!r} is neither 'scored' nor "
                                f"'inherited'")
             elif basis == "inherited":
-                sources = [c for c in ids_in(text, "calib") if c != me]
-                if not sources:
-                    bad(doc, "G3", "basis: inherited, but the artifact names "
-                                   "no source CALIBRATION; a borrowed "
-                                   "threshold must say where it was borrowed "
-                                   "from")
+                # The source is a frontmatter field, not a body mention. A
+                # first version accepted any calibration id anywhere in the
+                # text, so a calibration that cross-referenced two siblings
+                # in ordinary prose passed as "inherited" while naming no
+                # source at all (tester, 2026-10-01). Provenance needs a
+                # declared position. The source need not resolve in this
+                # tree -- it usually lives in another system's project.
+                src = ids_in(doc["fm"].get("inherited_from", ""), "calib")
+                if not src or me in src:
+                    bad(doc, "G3", "basis: inherited, but frontmatter has no "
+                                   "`inherited_from:` naming the source "
+                                   "CALIBRATION; a cross-reference in the body "
+                                   "is not a provenance record")
 
         # G4 -- findings rest on permitting verdicts
         if kind == "FINDING":

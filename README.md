@@ -81,6 +81,30 @@ real data: what goes in, what happens, what comes out. 27 spectra in, 17 usable
 numbers and 10 documented refusals out. `tests/run_end_to_end.sh` executes it
 and asserts that outcome.
 
+## A wrong model does not always show in the residual
+
+The worked example teaches that a wrong model shows up as a systematic
+residual, and the kit routes that to *biased*. A third field test (Li-ion
+coin-cell EIS, Zhang et al. 2020, Zenodo 3633835) supplied the counter-example,
+and it is the strongest argument the kit has for why `--extra-criterion` and
+ground-truth calibration exist. An unmodelled relaxation — a second process
+the fitted circuit has no element for — biases the polarisation resistance
+**by its own size** while every goodness-of-fit statistic stays clean:
+
+| unmodelled relaxation, as a fraction of R_pol | bias in fitted R_pol | χ²ᵣ | misfit |
+|---|---|---|---|
+| 10% | ≈ 10% | 1.1 | 0.5% |
+| 25% | ≈ 25% | 1.1 | 0.5% |
+| 50% | ≈ 50% | 1.1 | 0.5% |
+
+The fit is excellent and the number is wrong, by an amount no statistic in the
+VERDICT's five rows can see. Nothing in the kit detects this; what the kit does
+is refuse to let a threshold exist without the ground-truth study that would
+have found it — a CALIBRATION scored on *recovery of R_pol against known
+truth*, not on the residual — and let a system declare the criterion that
+study shows is needed. Misfit measures how well the curve passes through the
+points. It does not measure whether the parameter means what you think.
+
 ## The kit does not ship a fitter
 
 It is not missing one. The chain starts at a **result table**: one row per
@@ -175,7 +199,7 @@ which is why axis kind is a required, gated field in DATASET.
 cfs kit install --path . --install-mode copy
 
 # once published
-cfs kit install <org>/studio-kit-spectro
+cfs kit install omniscale-ai/studio-kit-spectro
 ```
 
 `--install-mode register` keeps a local kit in place instead of copying it —

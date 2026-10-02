@@ -3,6 +3,7 @@ status: {draft | complete}
 date: {YYYY-MM-DD}
 scope: {system slugs this licence is valid for, comma-separated; default: this system}
 basis: {scored | inherited}
+inherited_from: {cpt-<other-system>-calib-<slug>, required when basis is inherited}
 ---
 
 # {Calibration of <threshold or choice>}
@@ -12,7 +13,8 @@ basis: {scored | inherited}
 {`scope` and `basis` are how the gate tells a threshold scored on THIS data
 from one copied in. A VERDICT may not cite a calibration whose scope excludes
 its system (G3). A calibration with `basis: inherited` must name the
-CALIBRATION it was copied from, and verdicts issued on it are provisional: a
+CALIBRATION it was copied from in frontmatter `inherited_from:` — a mention
+in the body is not a provenance record — and verdicts issued on it are provisional: a
 FINDING marked `supported` may not rest on them (G4). Borrowing a threshold to
 get a first look at new data is legitimate and common; publishing on it is
 the failure this kit exists to stop.}

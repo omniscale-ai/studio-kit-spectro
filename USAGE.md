@@ -178,7 +178,7 @@ edited into the scripts.
 | its own misfit statistic | `--misfit-label '…'` | — |
 | criteria beyond the universal five | the ANALYSIS-PLAN's `## Verdict Criteria` table, one per row; emit the row with `--extra-criterion 'LABEL\|VALUE\|THRESHOLD\|CALIB-ID'` | G1 requires each row in every permitting VERDICT of the system; G2 requires its calibration to resolve |
 | thresholds scored on THIS data | a CALIBRATION with `scope: <system>` and `basis: scored` | G3: a VERDICT may not cite a calibration scoped elsewhere |
-| thresholds borrowed for a first look | a CALIBRATION in your system with `basis: inherited` naming the source | G3 requires the source; G4 refuses a `supported` FINDING resting on it |
+| thresholds borrowed for a first look | a CALIBRATION in your system with `basis: inherited` and `inherited_from: <source id>` | G3 requires the source; G4 refuses a `supported` FINDING resting on it |
 | an acquisition order — which way, once or both ways | DATASET `## Acquisition Order`; if both ways, `direction` is a MEASUREMENT axis and one FIT per direction | G10 |
 
 A worked case, from the second field test. MIS capacitors swept
@@ -196,8 +196,9 @@ other way at a thousand times the impedance:
 ---
 scope: ulk
 basis: inherited
+inherited_from: cpt-zno-calib-misfit-metric
 ---
-… inherited from `cpt-zno-calib-misfit-metric`; not re-scored at kΩ scale …
+… scored on MΩ-scale ZnO spectra; not re-scored at kΩ scale …
 
 # the emit declares the model's test and the extra criterion
 python3 scripts/emit_artifacts.py results.csv --system ulk … \
